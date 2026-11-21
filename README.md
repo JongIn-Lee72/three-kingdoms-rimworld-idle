@@ -8,8 +8,8 @@
 
 - **3계층 코드 우선(Code-First) Godot 4 구조**:
   - **Layer 1 (`src/core/`, `src/micro/`, `src/macro/`, `src/faction/`, `src/net/`, `src/persistence/`)**: 순수 `RefCounted` 기반 헤드리스 결정론적 정수(`int64` permille/bp) 시뮬레이션 + `SplitMix64` 무상태 난수(`DeterministicRNG`) + `CRC32`/`SHA-256` 상태 해싱.
-  - **Layer 2 (`data/`, `assets/`)**: 순수 UTF-8 JSON 데이터 8종(CC0 에셋 매니페스트 `data/assets_manifest.json` 포함) 및 10테이블 SQLite 스키마(`data/schemas/world_state_schema.sql`), 검증된 **CC0 1.0 그래픽·사운드 에셋 33종**(`assets/ASSETS_ATTRIBUTION.md`), 바이너리 `.tres` 0건.
-  - **Layer 3 (`src/ui/`, `scenes/`)**: 30줄 미만의 최소 부트스트랩 씬(`main_client.tscn`, `headless_server.tscn`) + 프로그래밍 방식 4대 통합 UI 뷰(2D `32×32` 장원 타일맵 캔버스, 수묵화 천하 전략도 캔버스, Kenney 9-Slice 테마, `AssetRegistry` & `AudioManager` 동양풍 BGM/16종 SFX).
+  - **Layer 2 (`data/`, `assets/`)**: 순수 UTF-8 JSON 데이터 8종(CC0 에셋 매니페스트 `data/assets_manifest.json` 포함) 및 10테이블 SQLite 스키마(`data/schemas/world_state_schema.sql`), `itch.io` / `Kenney.nl` / `OpenGameArt.org`에서 리서치·확보한 **100% CC0 1.0 그래픽·사운드 에셋 33종**(`assets/ASSETS_ATTRIBUTION.md`), 바이너리 `.tres` 0건.
+  - **Layer 3 (`src/ui/`, `scenes/`)**: 30줄 미만의 최소 부트스트랩 씬(`main_client.tscn`, `headless_server.tscn`) + 프로그래밍 방식 4대 통합 UI 뷰(2D `32×32` Kenney 타일맵 장원 캔버스, OpenGameArt CC0 양피지 천하 전략도 캔버스, Kenney 9-Slice 테마, `AssetRegistry` & `AudioManager` 동양풍 BGM/16종 SFX).
 - **2계층 결합 시뮬레이션 (`Micro LOD 0/1` ↔ `Macro Graph G=(V,E)`)**:
   - 개인 장원(`32×32`, 8구역, 10시설, 5대 능력치·열정 불꽃, 5대 욕구, 10대 기질, 심리 붕괴/심기일전/영웅적 각성, 비상 지하창고 및 오프라인 불사 보호).
   - 삼국지 9주 15거점 22간선 전략도, 랜체스터 $N^{0.85}$ 자동 전투·5합 일기토·계략/기후, 지역 지정가 거래소 + AMM, 천명 감독관 스토리텔러(`사마천/동탁/문경지치`).

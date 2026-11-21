@@ -289,7 +289,7 @@ func _validate_assets_manifest(path: String, errors: Array[String]) -> void:
 	if str(manifest.get("schema_version", "")) != "ASSETS_MANIFEST_V1":
 		errors.append("assets_manifest.json schema_version must be ASSETS_MANIFEST_V1")
 
-	var allowed_licenses: Array[String] = ["CC0-1.0", "Original-Project-CC0"]
+	var allowed_licenses: Array[String] = ["CC0-1.0"]
 	var assets_var: Variant = manifest.get("assets", null)
 	if not (assets_var is Array):
 		errors.append("assets_manifest.json missing assets array")
@@ -314,6 +314,9 @@ func _validate_assets_manifest(path: String, errors: Array[String]) -> void:
 			var license_str: String = str(entry.get("license", ""))
 			if not allowed_licenses.has(license_str):
 				errors.append("assets_manifest.json assets[%d] invalid license '%s' (%s)" % [idx, license_str, asset_path])
+			var source_url: String = str(entry.get("source_url", ""))
+			if not source_url.begins_with("https://"):
+				errors.append("assets_manifest.json assets[%d] must come from verified https:// CC0 source (%s)" % [idx, asset_path])
 
 	var sfx_var: Variant = manifest.get("sfx_event_map", null)
 	if not (sfx_var is Dictionary):

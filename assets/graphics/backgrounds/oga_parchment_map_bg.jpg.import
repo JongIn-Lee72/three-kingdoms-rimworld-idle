@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://55pcd3ldhty3"
-path="res://.godot/imported/three_kingdoms_map_bg.jpg-327121ff883412e6c331c83cfaf13d42.ctex"
+uid="uid://d4r7m2xh0kor"
+path="res://.godot/imported/oga_parchment_map_bg.jpg-3ec2380fb3df39b16c3bebee97840933.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/graphics/backgrounds/three_kingdoms_map_bg.jpg"
-dest_files=["res://.godot/imported/three_kingdoms_map_bg.jpg-327121ff883412e6c331c83cfaf13d42.ctex"]
+source_file="res://assets/graphics/backgrounds/oga_parchment_map_bg.jpg"
+dest_files=["res://.godot/imported/oga_parchment_map_bg.jpg-3ec2380fb3df39b16c3bebee97840933.ctex"]
 
 [params]
 

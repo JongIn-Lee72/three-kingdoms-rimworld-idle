@@ -1,8 +1,7 @@
 {
   "schema_version": "ASSETS_MANIFEST_V1",
   "allowed_licenses": [
-    "CC0-1.0",
-    "Original-Project-CC0"
+    "CC0-1.0"
   ],
   "total_assets": 33,
   "sfx_event_map": {
@@ -171,7 +170,7 @@
       "path": "res://assets/audio/sfx/metal-clang.wav",
       "rel_path": "assets/audio/sfx/metal-clang.wav",
       "kind": "sfx",
-      "pack": "Kenney — RPG Audio / Impact Sounds (kenney.nl)",
+      "pack": "Kenney — Impact Sounds (kenney.nl)",
       "source_url": "https://kenney.nl/assets/impact-sounds",
       "license": "CC0-1.0",
       "bytes": 38288,
@@ -228,24 +227,24 @@
       "sha256": "d9ea8448b39287367a749fbb00733a398abb3d9e36d0e0b5ab969b2d047a3e41"
     },
     {
-      "path": "res://assets/graphics/backgrounds/three_kingdoms_crest_banner.jpg",
-      "rel_path": "assets/graphics/backgrounds/three_kingdoms_crest_banner.jpg",
+      "path": "res://assets/graphics/backgrounds/oga_parchment_banner.png",
+      "rel_path": "assets/graphics/backgrounds/oga_parchment_banner.png",
       "kind": "background",
-      "pack": "Project Original Artwork (Three Kingdoms Imperial Banner)",
-      "source_url": "local://generated-original",
-      "license": "Original-Project-CC0",
-      "bytes": 952386,
-      "sha256": "7202bbbc63e0bd3a329799fee5c3f7ae5ecfa65668e4609d58cfc0678fad62f2"
+      "pack": "OpenGameArt — Old Parchment Paper (alpha)",
+      "source_url": "https://opengameart.org/content/old-parchment-paper",
+      "license": "CC0-1.0",
+      "bytes": 397293,
+      "sha256": "a6684d988405c7522d4206e995c097fbfc22ccf59a12643e0f63b9015bb34f74"
     },
     {
-      "path": "res://assets/graphics/backgrounds/three_kingdoms_map_bg.jpg",
-      "rel_path": "assets/graphics/backgrounds/three_kingdoms_map_bg.jpg",
+      "path": "res://assets/graphics/backgrounds/oga_parchment_map_bg.jpg",
+      "rel_path": "assets/graphics/backgrounds/oga_parchment_map_bg.jpg",
       "kind": "background",
-      "pack": "Project Original Artwork (Three Kingdoms Ink-Wash Map)",
-      "source_url": "local://generated-original",
-      "license": "Original-Project-CC0",
-      "bytes": 1003172,
-      "sha256": "f462e22754be9802dd2882d44d2ea4b25ef0764b410089ecd95300623ca14288"
+      "pack": "OpenGameArt — Parchment Background (FelisChaus)",
+      "source_url": "https://opengameart.org/content/parchment-background",
+      "license": "CC0-1.0",
+      "bytes": 90375,
+      "sha256": "75ddfed3be040d9aa4d1f7f71d219028eaac06c1a6c0af3dfe2fafc9f352e632"
     },
     {
       "path": "res://assets/graphics/emotes/emote_combat.png",

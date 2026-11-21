@@ -122,18 +122,18 @@ func test_asset_registry_cc0_tiles_sprites_backgrounds_and_theme() -> void:
 		assert_true(utex is AtlasTexture, "Army unit icon is AtlasTexture for " + utype)
 		assert_eq(utex.get_size(), Vector2(16, 16), "Army unit icon size is 16x16 for " + utype)
 
-	# 7. MAP_BG (1376x768) & CREST_BANNER (1376x768)
+	# 7. OpenGameArt CC0 Parchment MAP_BG & CREST_BANNER (external verified CC0-1.0)
 	var map_bg: Texture2D = reg.get_texture(AssetRegistry.MAP_BG)
-	assert_not_null(map_bg, "MAP_BG texture loaded")
+	assert_not_null(map_bg, "MAP_BG OpenGameArt CC0 parchment loaded")
 	if map_bg != null:
-		assert_eq(map_bg.get_width(), 1376, "MAP_BG width == 1376")
-		assert_eq(map_bg.get_height(), 768, "MAP_BG height == 768")
+		assert_gte(map_bg.get_width(), 256, "MAP_BG width >= 256")
+		assert_gte(map_bg.get_height(), 256, "MAP_BG height >= 256")
 
 	var crest_banner: Texture2D = reg.get_texture(AssetRegistry.CREST_BANNER)
-	assert_not_null(crest_banner, "CREST_BANNER texture loaded")
+	assert_not_null(crest_banner, "CREST_BANNER OpenGameArt CC0 parchment loaded")
 	if crest_banner != null:
-		assert_eq(crest_banner.get_width(), 1376, "CREST_BANNER width == 1376")
-		assert_eq(crest_banner.get_height(), 768, "CREST_BANNER height == 768")
+		assert_gte(crest_banner.get_width(), 256, "CREST_BANNER width >= 256")
+		assert_gte(crest_banner.get_height(), 256, "CREST_BANNER height >= 256")
 
 	assert_null(reg.get_texture(""), "Empty texture path returns null")
 

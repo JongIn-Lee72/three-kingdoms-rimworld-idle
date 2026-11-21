@@ -5,8 +5,8 @@ const MANIFEST_PATH: String = "res://data/assets_manifest.json"
 
 const TINY_TOWN: String = "res://assets/graphics/tilesets/kenney_tiny_town.png"
 const TINY_DUNGEON: String = "res://assets/graphics/tilesets/kenney_tiny_dungeon.png"
-const MAP_BG: String = "res://assets/graphics/backgrounds/three_kingdoms_map_bg.jpg"
-const CREST_BANNER: String = "res://assets/graphics/backgrounds/three_kingdoms_crest_banner.jpg"
+const MAP_BG: String = "res://assets/graphics/backgrounds/oga_parchment_map_bg.jpg"
+const CREST_BANNER: String = "res://assets/graphics/backgrounds/oga_parchment_banner.png"
 const PANEL_BORDER_GOLD: String = "res://assets/graphics/ui/panel_border_015.png"
 const PANEL_BORDER_SLATE: String = "res://assets/graphics/ui/panel_border_010.png"
 

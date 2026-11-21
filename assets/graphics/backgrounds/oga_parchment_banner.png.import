@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://daaec75iji7or"
-path="res://.godot/imported/three_kingdoms_crest_banner.jpg-1609a5e1a5bc5b882ab559d300e68030.ctex"
+uid="uid://c6xbe1e7g6y6o"
+path="res://.godot/imported/oga_parchment_banner.png-f54ec743885915d172a01532c0ab3a29.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/graphics/backgrounds/three_kingdoms_crest_banner.jpg"
-dest_files=["res://.godot/imported/three_kingdoms_crest_banner.jpg-1609a5e1a5bc5b882ab559d300e68030.ctex"]
+source_file="res://assets/graphics/backgrounds/oga_parchment_banner.png"
+dest_files=["res://.godot/imported/oga_parchment_banner.png-f54ec743885915d172a01532c0ab3a29.ctex"]
 
 [params]
 
