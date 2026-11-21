@@ -1,0 +1,361 @@
+{
+  "schema_version": "ASSETS_MANIFEST_V1",
+  "allowed_licenses": [
+    "CC0-1.0",
+    "Original-Project-CC0"
+  ],
+  "total_assets": 33,
+  "sfx_event_map": {
+    "UI_CLICK": "res://assets/audio/sfx/confirmation_002.ogg",
+    "UI_ERROR": "res://assets/audio/sfx/error_006.ogg",
+    "TAB_SWITCH": "res://assets/audio/sfx/page-turn.wav",
+    "BUILD_UPGRADE": "res://assets/audio/sfx/chop.ogg",
+    "DOOR_MANOR": "res://assets/audio/sfx/door-close-1.wav",
+    "COIN_TRADE": "res://assets/audio/sfx/coin-drop.wav",
+    "MARCH_DISPATCH": "res://assets/audio/sfx/footstep-wood-1.wav",
+    "DOCTRINE_BANNER": "res://assets/audio/sfx/cloth-1.wav",
+    "DUEL_CLASH": "res://assets/audio/sfx/oga_sword_sound.wav",
+    "METAL_FORGE": "res://assets/audio/sfx/metal-clang.wav",
+    "SIEGE_IMPACT": "res://assets/audio/sfx/impactWood_light_002.ogg",
+    "MELEE_STRIKE": "res://assets/audio/sfx/oga_melee_sound.wav",
+    "BANQUET_CHEER": "res://assets/audio/sfx/glass-clink.wav",
+    "AWAKENING_CHIME": "res://assets/audio/sfx/bell-ding.wav",
+    "GAZETTE_OPEN": "res://assets/audio/sfx/book-flip.wav",
+    "SEAL_VERIFY": "res://assets/audio/sfx/drop_002.ogg"
+  },
+  "bgm_tracks": {
+    "MAIN_THREE_KINGDOMS": "res://assets/audio/bgm/east_asian_theme.ogg"
+  },
+  "assets": [
+    {
+      "path": "res://assets/audio/bgm/east_asian_theme.ogg",
+      "rel_path": "assets/audio/bgm/east_asian_theme.ogg",
+      "kind": "bgm",
+      "pack": "OpenGameArt — Asian/Oriental Loop (asianoriental2)",
+      "source_url": "https://opengameart.org/content/asianoriental2",
+      "license": "CC0-1.0",
+      "bytes": 3601956,
+      "sha256": "ad7a04dca194d467b7f135b019b7e2b381b1e8cd2d21f38448df5bb2d145b211"
+    },
+    {
+      "path": "res://assets/audio/sfx/bell-ding.wav",
+      "rel_path": "assets/audio/sfx/bell-ding.wav",
+      "kind": "sfx",
+      "pack": "Kenney — Impact Sounds (kenney.nl)",
+      "source_url": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0-1.0",
+      "bytes": 61910,
+      "sha256": "2712346afd17fe2bd838162aec057f23a0848114b4d084841686aa3ef76382c5"
+    },
+    {
+      "path": "res://assets/audio/sfx/book-flip.wav",
+      "rel_path": "assets/audio/sfx/book-flip.wav",
+      "kind": "sfx",
+      "pack": "Kenney — RPG Audio (itch.io / kenney.nl)",
+      "source_url": "https://kenney.nl/assets/rpg-audio",
+      "license": "CC0-1.0",
+      "bytes": 38018,
+      "sha256": "cf9da2d02ab60ea1324812a838dc49a254c6bc797cb7d8c8b9d9971b1874eb9f"
+    },
+    {
+      "path": "res://assets/audio/sfx/chop.ogg",
+      "rel_path": "assets/audio/sfx/chop.ogg",
+      "kind": "sfx",
+      "pack": "Kenney — RPG Audio (kenney.nl)",
+      "source_url": "https://kenney.nl/assets/rpg-audio",
+      "license": "CC0-1.0",
+      "bytes": 11406,
+      "sha256": "41095dffee1ff2d0715c4eadd82ae7846dfd4d67327088a69848a9bd2e08db1b"
+    },
+    {
+      "path": "res://assets/audio/sfx/cloth-1.wav",
+      "rel_path": "assets/audio/sfx/cloth-1.wav",
+      "kind": "sfx",
+      "pack": "Kenney — RPG Audio (kenney.nl)",
+      "source_url": "https://kenney.nl/assets/rpg-audio",
+      "license": "CC0-1.0",
+      "bytes": 55620,
+      "sha256": "a636fafaffa63b8735c0f5b22c9b006f5d7e383f58bf0561390e0bd5edf0c93f"
+    },
+    {
+      "path": "res://assets/audio/sfx/coin-drop.wav",
+      "rel_path": "assets/audio/sfx/coin-drop.wav",
+      "kind": "sfx",
+      "pack": "Kenney — RPG Audio (itch.io / kenney.nl)",
+      "source_url": "https://kenney.nl/assets/rpg-audio",
+      "license": "CC0-1.0",
+      "bytes": 179310,
+      "sha256": "20eb1bc831750ed457f4dce013f1bd31fede4f37edd5bf7ef2b0db594c7058f5"
+    },
+    {
+      "path": "res://assets/audio/sfx/confirmation_002.ogg",
+      "rel_path": "assets/audio/sfx/confirmation_002.ogg",
+      "kind": "sfx",
+      "pack": "Kenney — Interface Sounds (kenney.nl)",
+      "source_url": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0-1.0",
+      "bytes": 16267,
+      "sha256": "9f3a15ffd9d8e031e2afa17539baa4ef3655b2ad06fcf9d44e5d3bd0d0ec64e2"
+    },
+    {
+      "path": "res://assets/audio/sfx/door-close-1.wav",
+      "rel_path": "assets/audio/sfx/door-close-1.wav",
+      "kind": "sfx",
+      "pack": "Kenney — RPG Audio (kenney.nl)",
+      "source_url": "https://kenney.nl/assets/rpg-audio",
+      "license": "CC0-1.0",
+      "bytes": 63366,
+      "sha256": "417acff2d6a3f3a41f3aa64d88043ca41525459f44167de8497c2f27627c2a8e"
+    },
+    {
+      "path": "res://assets/audio/sfx/door-creak.wav",
+      "rel_path": "assets/audio/sfx/door-creak.wav",
+      "kind": "sfx",
+      "pack": "Kenney — RPG Audio (kenney.nl)",
+      "source_url": "https://kenney.nl/assets/rpg-audio",
+      "license": "CC0-1.0",
+      "bytes": 78844,
+      "sha256": "0a2d86123ae14ddb417c8ea82831ec94395d0b5937a426f023afb20273fc4204"
+    },
+    {
+      "path": "res://assets/audio/sfx/drop_002.ogg",
+      "rel_path": "assets/audio/sfx/drop_002.ogg",
+      "kind": "sfx",
+      "pack": "Kenney — Interface Sounds (kenney.nl)",
+      "source_url": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0-1.0",
+      "bytes": 8492,
+      "sha256": "978c28bfc517f54fc956f7491e33f37802809d938933bf5071f39423089554d3"
+    },
+    {
+      "path": "res://assets/audio/sfx/error_006.ogg",
+      "rel_path": "assets/audio/sfx/error_006.ogg",
+      "kind": "sfx",
+      "pack": "Kenney — Interface Sounds (kenney.nl)",
+      "source_url": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0-1.0",
+      "bytes": 10369,
+      "sha256": "b1a3f4cf361f6997fd0d71074fa961689fc7fdab71d91e8cdaaeca4c09528fcc"
+    },
+    {
+      "path": "res://assets/audio/sfx/footstep-wood-1.wav",
+      "rel_path": "assets/audio/sfx/footstep-wood-1.wav",
+      "kind": "sfx",
+      "pack": "Kenney — RPG Audio (kenney.nl)",
+      "source_url": "https://kenney.nl/assets/rpg-audio",
+      "license": "CC0-1.0",
+      "bytes": 9172,
+      "sha256": "27d27ed8cb5515481e7d95c152af881c1281f63dbd4c01395d0e5e2b43191094"
+    },
+    {
+      "path": "res://assets/audio/sfx/glass-clink.wav",
+      "rel_path": "assets/audio/sfx/glass-clink.wav",
+      "kind": "sfx",
+      "pack": "Kenney — Impact Sounds (kenney.nl)",
+      "source_url": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0-1.0",
+      "bytes": 41636,
+      "sha256": "29d5c1e5248c13e92c5a3b850663c7eb8fc90deaa43ac6a85c0b042804c2fad9"
+    },
+    {
+      "path": "res://assets/audio/sfx/impactWood_light_002.ogg",
+      "rel_path": "assets/audio/sfx/impactWood_light_002.ogg",
+      "kind": "sfx",
+      "pack": "Kenney — Impact Sounds (kenney.nl)",
+      "source_url": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0-1.0",
+      "bytes": 8447,
+      "sha256": "64d181339ecb33c7781f04f18036d6d8625176834e0b1d9d752a28390d89f91b"
+    },
+    {
+      "path": "res://assets/audio/sfx/metal-clang.wav",
+      "rel_path": "assets/audio/sfx/metal-clang.wav",
+      "kind": "sfx",
+      "pack": "Kenney — RPG Audio / Impact Sounds (kenney.nl)",
+      "source_url": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0-1.0",
+      "bytes": 38288,
+      "sha256": "089d285b59392e07ba2d995bbd34b7e12cc90cbb0335f4c19f3e5ebd199b32e7"
+    },
+    {
+      "path": "res://assets/audio/sfx/oga_animal_melee_sound.wav",
+      "rel_path": "assets/audio/sfx/oga_animal_melee_sound.wav",
+      "kind": "sfx",
+      "pack": "OpenGameArt — 3 Melee Sounds",
+      "source_url": "https://opengameart.org/content/3-melee-sounds",
+      "license": "CC0-1.0",
+      "bytes": 111346,
+      "sha256": "3918b3517ef36c437856307a14a4a87b05a7f307742a9687a3c1c2ce859aa668"
+    },
+    {
+      "path": "res://assets/audio/sfx/oga_melee_sound.wav",
+      "rel_path": "assets/audio/sfx/oga_melee_sound.wav",
+      "kind": "sfx",
+      "pack": "OpenGameArt — 3 Melee Sounds",
+      "source_url": "https://opengameart.org/content/3-melee-sounds",
+      "license": "CC0-1.0",
+      "bytes": 106910,
+      "sha256": "1dc8e8b168c2c5faa526c00e9ea8b1f9015cc57a7cb0b84c6f69e9c83e4cbfec"
+    },
+    {
+      "path": "res://assets/audio/sfx/oga_sword_sound.wav",
+      "rel_path": "assets/audio/sfx/oga_sword_sound.wav",
+      "kind": "sfx",
+      "pack": "OpenGameArt — 3 Melee Sounds",
+      "source_url": "https://opengameart.org/content/3-melee-sounds",
+      "license": "CC0-1.0",
+      "bytes": 95214,
+      "sha256": "0c964284a606da1bd9591a20184c0e0aeb358bb21e41c9edd16a1410911fa042"
+    },
+    {
+      "path": "res://assets/audio/sfx/page-turn.wav",
+      "rel_path": "assets/audio/sfx/page-turn.wav",
+      "kind": "sfx",
+      "pack": "Kenney — RPG Audio (itch.io / kenney.nl)",
+      "source_url": "https://kenney.nl/assets/rpg-audio",
+      "license": "CC0-1.0",
+      "bytes": 153006,
+      "sha256": "de6e984d5013d6f789eb1239ea031a18b39b338853b017fd902b9398c763cb28"
+    },
+    {
+      "path": "res://assets/audio/sfx/punch-hit.wav",
+      "rel_path": "assets/audio/sfx/punch-hit.wav",
+      "kind": "sfx",
+      "pack": "Kenney — Impact Sounds (kenney.nl)",
+      "source_url": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0-1.0",
+      "bytes": 47832,
+      "sha256": "d9ea8448b39287367a749fbb00733a398abb3d9e36d0e0b5ab969b2d047a3e41"
+    },
+    {
+      "path": "res://assets/graphics/backgrounds/three_kingdoms_crest_banner.jpg",
+      "rel_path": "assets/graphics/backgrounds/three_kingdoms_crest_banner.jpg",
+      "kind": "background",
+      "pack": "Project Original Artwork (Three Kingdoms Imperial Banner)",
+      "source_url": "local://generated-original",
+      "license": "Original-Project-CC0",
+      "bytes": 952386,
+      "sha256": "7202bbbc63e0bd3a329799fee5c3f7ae5ecfa65668e4609d58cfc0678fad62f2"
+    },
+    {
+      "path": "res://assets/graphics/backgrounds/three_kingdoms_map_bg.jpg",
+      "rel_path": "assets/graphics/backgrounds/three_kingdoms_map_bg.jpg",
+      "kind": "background",
+      "pack": "Project Original Artwork (Three Kingdoms Ink-Wash Map)",
+      "source_url": "local://generated-original",
+      "license": "Original-Project-CC0",
+      "bytes": 1003172,
+      "sha256": "f462e22754be9802dd2882d44d2ea4b25ef0764b410089ecd95300623ca14288"
+    },
+    {
+      "path": "res://assets/graphics/emotes/emote_combat.png",
+      "rel_path": "assets/graphics/emotes/emote_combat.png",
+      "kind": "emote",
+      "pack": "Kenney — Emote Pack (itch.io / kenney.nl)",
+      "source_url": "https://kenney.nl/assets/emote-pack",
+      "license": "CC0-1.0",
+      "bytes": 283,
+      "sha256": "05ca4a8eed5d05c653ad036203d2b2aa53c03aaa989be0d54e4181987d0dea33"
+    },
+    {
+      "path": "res://assets/graphics/emotes/emote_exclamations.png",
+      "rel_path": "assets/graphics/emotes/emote_exclamations.png",
+      "kind": "emote",
+      "pack": "Kenney — Emote Pack (itch.io / kenney.nl)",
+      "source_url": "https://kenney.nl/assets/emote-pack",
+      "license": "CC0-1.0",
+      "bytes": 192,
+      "sha256": "54e50b4cdf11039be07da986e8335abdceea8369af5de80694ff98f525161c12"
+    },
+    {
+      "path": "res://assets/graphics/emotes/emote_question.png",
+      "rel_path": "assets/graphics/emotes/emote_question.png",
+      "kind": "emote",
+      "pack": "Kenney — Emote Pack (itch.io / kenney.nl)",
+      "source_url": "https://kenney.nl/assets/emote-pack",
+      "license": "CC0-1.0",
+      "bytes": 200,
+      "sha256": "b917852b805af9bf62aa6f8b139eed17d8fba0b68713dc6046704bc6bd38a745"
+    },
+    {
+      "path": "res://assets/graphics/props/rpg_house_inn.png",
+      "rel_path": "assets/graphics/props/rpg_house_inn.png",
+      "kind": "prop",
+      "pack": "Bakudas & Gabe Fern — Generic RPG Pack (itch.io)",
+      "source_url": "https://bakudas.itch.io/generic-rpg-pack",
+      "license": "CC0-1.0",
+      "bytes": 2851,
+      "sha256": "cca76c60353042d3cd75d8597810ba73b89d9bcb788d8015b8f845128fe5b026"
+    },
+    {
+      "path": "res://assets/graphics/props/rpg_pawn_walk.png",
+      "rel_path": "assets/graphics/props/rpg_pawn_walk.png",
+      "kind": "sprite",
+      "pack": "Bakudas & Gabe Fern — Generic RPG Pack (itch.io)",
+      "source_url": "https://bakudas.itch.io/generic-rpg-pack",
+      "license": "CC0-1.0",
+      "bytes": 1997,
+      "sha256": "48b8ac17973c0b6867c62747bd5c9d36a4fa8430b229e4c997ac7601ba9b2ce8"
+    },
+    {
+      "path": "res://assets/graphics/props/rpg_tree01.png",
+      "rel_path": "assets/graphics/props/rpg_tree01.png",
+      "kind": "prop",
+      "pack": "Bakudas & Gabe Fern — Generic RPG Pack (itch.io)",
+      "source_url": "https://bakudas.itch.io/generic-rpg-pack",
+      "license": "CC0-1.0",
+      "bytes": 2735,
+      "sha256": "91f13f3a3d676bcd66e5039655bddc40fac2c0f75568dfc4865dc42d3b58e756"
+    },
+    {
+      "path": "res://assets/graphics/tilesets/kenney_tiny_dungeon.png",
+      "rel_path": "assets/graphics/tilesets/kenney_tiny_dungeon.png",
+      "kind": "tileset",
+      "pack": "Kenney — Tiny Dungeon (itch.io / kenney.nl)",
+      "source_url": "https://kenney.nl/assets/tiny-dungeon",
+      "license": "CC0-1.0",
+      "bytes": 5533,
+      "sha256": "5653222ac495d89e942f9b636300759b3f38e85b26e9b888676f2e9ab834095a"
+    },
+    {
+      "path": "res://assets/graphics/tilesets/kenney_tiny_town.png",
+      "rel_path": "assets/graphics/tilesets/kenney_tiny_town.png",
+      "kind": "tileset",
+      "pack": "Kenney — Tiny Town (itch.io / kenney.nl)",
+      "source_url": "https://kenney.nl/assets/tiny-town",
+      "license": "CC0-1.0",
+      "bytes": 5395,
+      "sha256": "35fcec2f8ea098137204b49e28c23bcce5c612cdb8947bb1eac4aabb8623e550"
+    },
+    {
+      "path": "res://assets/graphics/ui/fantasy_border_sheet.png",
+      "rel_path": "assets/graphics/ui/fantasy_border_sheet.png",
+      "kind": "ui_border",
+      "pack": "Kenney — Fantasy UI Borders (itch.io / kenney.nl)",
+      "source_url": "https://kenney.nl/assets/fantasy-ui-borders",
+      "license": "CC0-1.0",
+      "bytes": 10539,
+      "sha256": "3d0bf19dd6130a22c8eefcb1485daeb68a2a8ed31926af613bc231de8036b475"
+    },
+    {
+      "path": "res://assets/graphics/ui/panel_border_010.png",
+      "rel_path": "assets/graphics/ui/panel_border_010.png",
+      "kind": "ui_border",
+      "pack": "Kenney — Fantasy UI Borders (itch.io / kenney.nl)",
+      "source_url": "https://kenney.nl/assets/fantasy-ui-borders",
+      "license": "CC0-1.0",
+      "bytes": 170,
+      "sha256": "480050cadb258f8d6cd377ffe3ce2f5af3cb7980d6d72aae85752d0c67219620"
+    },
+    {
+      "path": "res://assets/graphics/ui/panel_border_015.png",
+      "rel_path": "assets/graphics/ui/panel_border_015.png",
+      "kind": "ui_border",
+      "pack": "Kenney — Fantasy UI Borders (itch.io / kenney.nl)",
+      "source_url": "https://kenney.nl/assets/fantasy-ui-borders",
+      "license": "CC0-1.0",
+      "bytes": 136,
+      "sha256": "ec6b95abaafd791f47f8dccf64132773044d43a194fea3de809a62011e593074"
+    }
+  ]
+}

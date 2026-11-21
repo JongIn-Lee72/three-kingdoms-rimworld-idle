@@ -3,6 +3,14 @@ extends Control
 
 signal intent_emitted(cmd_type: String, args: Dictionary)
 
+var _assets: AssetRegistry = null
+var _grid_panel: PanelContainer = null
+var _grid_canvas: Control = null
+var _resource_icons_bar: HBoxContainer = null
+var _resource_icon_rects: Dictionary = {}
+var _resource_icon_labels: Dictionary = {}
+var _section_panels_slate: Array[PanelContainer] = []
+
 var _header_label: Label = null
 var _resources_label: Label = null
 var _grid_summary_label: Label = null
@@ -26,10 +34,95 @@ static func _to_int(v: Variant, fallback: int = 0) -> int:
 	return fallback
 
 
+static func _to_bool(v: Variant, fallback: bool = false) -> bool:
+	if v is bool:
+		var bv: bool = v
+		return bv
+	if v is int:
+		var iv: int = v
+		return iv != 0
+	return fallback
+
+
+static func _zone_tint(zone_type: String) -> Color:
+	match zone_type:
+		"ZONE_FARMLAND":
+			return Color(0.75, 0.90, 0.65, 0.35)
+		"ZONE_STOCKPILE":
+			return Color(0.88, 0.78, 0.55, 0.30)
+		"ZONE_HIDDEN_VAULT":
+			return Color(0.65, 0.58, 0.85, 0.38)
+		"ZONE_BARRACKS":
+			return Color(0.88, 0.45, 0.40, 0.35)
+		"ZONE_WORKSHOP":
+			return Color(0.85, 0.62, 0.35, 0.35)
+		"ZONE_RESIDENCE":
+			return Color(0.72, 0.82, 0.92, 0.30)
+		"ZONE_INFIRMARY":
+			return Color(0.55, 0.88, 0.78, 0.35)
+		"ZONE_DEFENSE_LINE":
+			return Color(0.55, 0.55, 0.62, 0.40)
+		_:
+			return Color(0.70, 0.70, 0.70, 0.25)
+
+
+static func _default_zone_at(gx: int, gy: int) -> String:
+	if gy < 4:
+		return "ZONE_DEFENSE_LINE"
+	if gx < 16 and gy < 16:
+		return "ZONE_FARMLAND"
+	if gx >= 16 and gx < 26 and gy < 12:
+		return "ZONE_STOCKPILE"
+	if gx >= 26 and gy < 12:
+		return "ZONE_HIDDEN_VAULT"
+	if gx < 16 and gy >= 16 and gy < 24:
+		return "ZONE_BARRACKS"
+	if gx >= 16 and gy >= 12 and gy < 20:
+		return "ZONE_WORKSHOP"
+	if gx < 20 and gy >= 24:
+		return "ZONE_RESIDENCE"
+	if gx >= 20 and gy >= 20:
+		return "ZONE_INFIRMARY"
+	return "ZONE_STOCKPILE"
+
+
 func _init() -> void:
 	name = "ManorGridView"
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	_build_ui()
+
+
+func set_asset_registry(reg: AssetRegistry) -> void:
+	_assets = reg
+	if _assets == null:
+		return
+	if _grid_panel != null:
+		_grid_panel.add_theme_stylebox_override("panel", _assets.build_panel_stylebox(true))
+	var slate_sb: StyleBoxTexture = _assets.build_panel_stylebox(false)
+	for p_slate: PanelContainer in _section_panels_slate:
+		if p_slate != null:
+			p_slate.add_theme_stylebox_override("panel", slate_sb)
+	for rk: String in DtoSchemas.RESOURCE_KEYS:
+		var tr_v: Variant = _resource_icon_rects.get(rk, null)
+		if tr_v is TextureRect:
+			var tr: TextureRect = tr_v
+			tr.texture = _assets.get_resource_icon(rk)
+	if _grid_canvas != null:
+		_grid_canvas.queue_redraw()
+
+
+func get_canvas_node() -> Control:
+	return _grid_canvas
+
+
+func _make_section_panel(parent: VBoxContainer) -> VBoxContainer:
+	var panel: PanelContainer = PanelContainer.new()
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var inner: VBoxContainer = VBoxContainer.new()
+	panel.add_child(inner)
+	parent.add_child(panel)
+	_section_panels_slate.append(panel)
+	return inner
 
 
 func _build_ui() -> void:
@@ -41,31 +134,59 @@ func _build_ui() -> void:
 	root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(root)
 
+	var hdr_sec: VBoxContainer = _make_section_panel(root)
 	_header_label = Label.new()
 	_header_label.text = "장원 그리드 뷰 (32x32) | LOD 1 | 대기 중"
-	root.add_child(_header_label)
+	hdr_sec.add_child(_header_label)
+
+	_resource_icons_bar = HBoxContainer.new()
+	_resource_icons_bar.add_theme_constant_override("separation", 10)
+	for rk: String in DtoSchemas.RESOURCE_KEYS:
+		var item_box: HBoxContainer = HBoxContainer.new()
+		item_box.add_theme_constant_override("separation", 4)
+		var icon_rect: TextureRect = TextureRect.new()
+		icon_rect.custom_minimum_size = Vector2(18, 18)
+		icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		item_box.add_child(icon_rect)
+		var rlbl: Label = Label.new()
+		rlbl.text = "%s:0" % rk
+		item_box.add_child(rlbl)
+		_resource_icons_bar.add_child(item_box)
+		_resource_icon_rects[rk] = icon_rect
+		_resource_icon_labels[rk] = rlbl
+	hdr_sec.add_child(_resource_icons_bar)
 
 	_resources_label = Label.new()
 	_resources_label.text = "자원: GRAIN 0 | COIN 0 | WOOD 0 | IRON 0 | HORSES 0 | HERBS_WINE 0 | WEAPONS 0 | MERIT_PRESTIGE 0"
 	_resources_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	root.add_child(_resources_label)
+	hdr_sec.add_child(_resources_label)
 
 	_grid_summary_label = Label.new()
 	_grid_summary_label.text = "32x32 논리 격자 (1024 타일): 구역 분포 대기"
 	_grid_summary_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	root.add_child(_grid_summary_label)
+	hdr_sec.add_child(_grid_summary_label)
 
 	_zones_label = Label.new()
 	_zones_label.text = "8대 구역 요약: -"
 	_zones_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	root.add_child(_zones_label)
+	hdr_sec.add_child(_zones_label)
 
+	_grid_panel = PanelContainer.new()
+	_grid_panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	_grid_canvas = Control.new()
+	_grid_canvas.custom_minimum_size = Vector2(384, 384)
+	_grid_canvas.draw.connect(_on_grid_canvas_draw)
+	_grid_panel.add_child(_grid_canvas)
+	root.add_child(_grid_panel)
+
+	var bld_sec: VBoxContainer = _make_section_panel(root)
 	var bld_title: Label = Label.new()
 	bld_title.text = "[10대 장원 시설 증축]"
-	root.add_child(bld_title)
+	bld_sec.add_child(bld_title)
 
 	_buildings_box = VBoxContainer.new()
-	root.add_child(_buildings_box)
+	bld_sec.add_child(_buildings_box)
 	for bid: String in ManorState.BUILDING_IDS:
 		var row: HBoxContainer = HBoxContainer.new()
 		var lbl: Label = Label.new()
@@ -81,12 +202,13 @@ func _build_ui() -> void:
 		_buildings_box.add_child(row)
 		_upgrade_buttons[bid] = {"label": lbl, "button": btn}
 
+	var pawn_sec: VBoxContainer = _make_section_panel(root)
 	var pawn_title: Label = Label.new()
 	pawn_title.text = "[가신 욕구 / 기분 / 정신 상태]"
-	root.add_child(pawn_title)
+	pawn_sec.add_child(pawn_title)
 
 	_pawns_box = VBoxContainer.new()
-	root.add_child(_pawns_box)
+	pawn_sec.add_child(_pawns_box)
 
 
 func _on_upgrade_pressed(building_id: String) -> void:
@@ -100,6 +222,123 @@ func emit_upgrade_intent(building_id: String, grid_x: int = -1, grid_y: int = -1
 	if grid_y >= 0 and grid_y < DtoSchemas.MANOR_GRID_SIZE:
 		args["grid_y"] = grid_y
 	intent_emitted.emit("CMD_BUILD_OR_UPGRADE", args)
+
+
+func _resolve_zone_grid() -> Array[String]:
+	var grid: Array[String] = []
+	var total: int = DtoSchemas.MANOR_GRID_SIZE * DtoSchemas.MANOR_GRID_SIZE
+	grid.resize(total)
+	for gy: int in range(DtoSchemas.MANOR_GRID_SIZE):
+		for gx: int in range(DtoSchemas.MANOR_GRID_SIZE):
+			grid[gy * DtoSchemas.MANOR_GRID_SIZE + gx] = _default_zone_at(gx, gy)
+
+	var tmap_v: Variant = _last_snapshot.get("tile_zone_map", [])
+	if tmap_v is Array:
+		var tma: Array = tmap_v
+		for idx: int in range(mini(total, tma.size())):
+			var zi: int = _to_int(tma[idx], -1)
+			if zi >= 0 and zi < ManorState.ZONE_TYPES.size():
+				grid[idx] = ManorState.ZONE_TYPES[zi]
+	elif _last_snapshot.get("zones", []) is Array:
+		var zones_a: Array = _last_snapshot.get("zones", [])
+		for zv: Variant in zones_a:
+			if zv is Dictionary:
+				var zd: Dictionary = zv
+				var zid: String = str(zd.get("id", ""))
+				if ManorState.ZONE_TYPES.has(zid):
+					var zx: int = maxi(0, _to_int(zd.get("x", 0), 0))
+					var zy: int = maxi(0, _to_int(zd.get("y", 0), 0))
+					var zw: int = maxi(0, _to_int(zd.get("w", 0), 0))
+					var zh: int = maxi(0, _to_int(zd.get("h", 0), 0))
+					for py: int in range(zy, mini(DtoSchemas.MANOR_GRID_SIZE, zy + zh)):
+						for px: int in range(zx, mini(DtoSchemas.MANOR_GRID_SIZE, zx + zw)):
+							grid[py * DtoSchemas.MANOR_GRID_SIZE + px] = zid
+	return grid
+
+
+func _extract_pawn_rows(snapshot: Dictionary) -> Array[Dictionary]:
+	var pawns_v: Variant = snapshot.get("pawns", {})
+	var pawn_rows: Array[Dictionary] = []
+	if pawns_v is Dictionary:
+		var pd: Dictionary = pawns_v
+		var pkeys: Array[String] = []
+		for k: Variant in pd.keys():
+			pkeys.append(str(k))
+		pkeys.sort()
+		for pk: String in pkeys:
+			var pv: Variant = pd[pk]
+			if pv is Dictionary:
+				var pdict: Dictionary = pv
+				var copy_p: Dictionary = pdict.duplicate(true)
+				if not copy_p.has("pawn_id"):
+					copy_p["pawn_id"] = pk
+				pawn_rows.append(copy_p)
+	elif pawns_v is Array:
+		var pa: Array = pawns_v
+		for pv: Variant in pa:
+			if pv is Dictionary:
+				var pdict: Dictionary = pv
+				pawn_rows.append(pdict.duplicate(true))
+	return pawn_rows
+
+
+func _on_grid_canvas_draw() -> void:
+	if _grid_canvas == null:
+		return
+	var canvas_size: Vector2 = _grid_canvas.size
+	if canvas_size.x <= 0.0 or canvas_size.y <= 0.0:
+		canvas_size = _grid_canvas.custom_minimum_size
+	var tile_w: float = canvas_size.x / float(DtoSchemas.MANOR_GRID_SIZE)
+	var tile_h: float = canvas_size.y / float(DtoSchemas.MANOR_GRID_SIZE)
+
+	_grid_canvas.draw_rect(Rect2(Vector2.ZERO, canvas_size), AssetRegistry.COLOR_LACQUER_BG)
+
+	var zone_grid: Array[String] = _resolve_zone_grid()
+	for gy: int in range(DtoSchemas.MANOR_GRID_SIZE):
+		for gx: int in range(DtoSchemas.MANOR_GRID_SIZE):
+			var ztype: String = zone_grid[gy * DtoSchemas.MANOR_GRID_SIZE + gx]
+			var tile_rect: Rect2 = Rect2(
+				float(gx) * tile_w,
+				float(gy) * tile_h,
+				tile_w,
+				tile_h
+			)
+			if _assets != null:
+				var tex: Texture2D = _assets.get_zone_tile(ztype)
+				if tex != null:
+					_grid_canvas.draw_texture_rect(tex, tile_rect, false)
+			_grid_canvas.draw_rect(tile_rect, _zone_tint(ztype))
+			_grid_canvas.draw_rect(tile_rect, Color(0.08, 0.06, 0.05, 0.25), false, 1.0)
+
+	var meta_v: Variant = _last_snapshot.get("meta", {})
+	var meta: Dictionary = meta_v if meta_v is Dictionary else {}
+	var raid_active: bool = _to_bool(meta.get("raid_defense_active", _last_snapshot.get("raid_defense_active", false)), false)
+
+	var pawn_rows: Array[Dictionary] = _extract_pawn_rows(_last_snapshot)
+	for pr: Dictionary in pawn_rows:
+		var pid: String = str(pr.get("pawn_id", "pawn"))
+		var gx: int = clampi(_to_int(pr.get("x", pr.get("grid_x", 16)), 16), 0, DtoSchemas.MANOR_GRID_SIZE - 1)
+		var gy: int = clampi(_to_int(pr.get("y", pr.get("grid_y", 16)), 16), 0, DtoSchemas.MANOR_GRID_SIZE - 1)
+		var is_avatar: bool = _to_bool(pr.get("is_avatar", pid.ends_with("_avatar")), pid.ends_with("_avatar"))
+		var job: String = str(pr.get("job", pr.get("current_job", "IDLE")))
+		var role_hint: String = str(pr.get("role_hint", pr.get("epithet", job)))
+		var mstate: String = str(pr.get("mental_state", "NORMAL"))
+
+		var px: float = float(gx) * tile_w
+		var py: float = float(gy) * tile_h
+		var sprite_rect: Rect2 = Rect2(px - 2.0, py - 2.0, tile_w + 4.0, tile_h + 4.0)
+		if _assets != null:
+			var ptex: Texture2D = _assets.get_pawn_sprite(is_avatar, role_hint)
+			if ptex != null:
+				_grid_canvas.draw_texture_rect(ptex, sprite_rect, false)
+			else:
+				_grid_canvas.draw_rect(sprite_rect, AssetRegistry.COLOR_GOLD_HIGHLIGHT if is_avatar else AssetRegistry.COLOR_PARCHMENT_TEXT)
+			var emote_tex: Texture2D = _assets.get_emote_texture(mstate, raid_active)
+			if emote_tex != null:
+				var emote_rect: Rect2 = Rect2(px, maxf(0.0, py - tile_h * 0.9), tile_w, tile_h * 0.85)
+				_grid_canvas.draw_texture_rect(emote_tex, emote_rect, false)
+		else:
+			_grid_canvas.draw_rect(sprite_rect, AssetRegistry.COLOR_GOLD_HIGHLIGHT if is_avatar else AssetRegistry.COLOR_PARCHMENT_TEXT)
 
 
 func apply_snapshot(snapshot: Dictionary) -> void:
@@ -118,7 +357,12 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 	var stock: Dictionary = stock_v if stock_v is Dictionary else {}
 	var res_parts: PackedStringArray = PackedStringArray()
 	for rk: String in DtoSchemas.RESOURCE_KEYS:
-		var _ok_r: bool = res_parts.append("%s: %d" % [rk, _to_int(stock.get(rk, 0), 0)])
+		var rval: int = _to_int(stock.get(rk, 0), 0)
+		var _ok_r: bool = res_parts.append("%s: %d" % [rk, rval])
+		var rlbl_v: Variant = _resource_icon_labels.get(rk, null)
+		if rlbl_v is Label:
+			var rlbl: Label = rlbl_v
+			rlbl.text = "%s:%d" % [rk, rval]
 	_resources_label.text = "8대 자원 | " + " | ".join(res_parts)
 
 	# 8-zone counts across 32x32 (1024 tiles)
@@ -185,28 +429,7 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 	for child: Node in _pawns_box.get_children():
 		child.queue_free()
 
-	var pawns_v: Variant = snapshot.get("pawns", {})
-	var pawn_rows: Array[Dictionary] = []
-	if pawns_v is Dictionary:
-		var pd: Dictionary = pawns_v
-		var pkeys: Array[String] = []
-		for k: Variant in pd.keys():
-			pkeys.append(str(k))
-		pkeys.sort()
-		for pk: String in pkeys:
-			var pv: Variant = pd[pk]
-			if pv is Dictionary:
-				var pdict: Dictionary = pv
-				var copy_p: Dictionary = pdict.duplicate(true)
-				if not copy_p.has("pawn_id"):
-					copy_p["pawn_id"] = pk
-				pawn_rows.append(copy_p)
-	elif pawns_v is Array:
-		var pa: Array = pawns_v
-		for pv: Variant in pa:
-			if pv is Dictionary:
-				pawn_rows.append(pv)
-
+	var pawn_rows: Array[Dictionary] = _extract_pawn_rows(snapshot)
 	for pr: Dictionary in pawn_rows:
 		var pid: String = str(pr.get("pawn_id", "pawn"))
 		var gx: int = _to_int(pr.get("x", pr.get("grid_x", 16)), 16)
@@ -226,6 +449,9 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 		]
 		plbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		_pawns_box.add_child(plbl)
+
+	if _grid_canvas != null:
+		_grid_canvas.queue_redraw()
 
 
 func get_building_level_displayed(building_id: String) -> int:

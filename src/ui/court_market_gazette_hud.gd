@@ -2,6 +2,17 @@ class_name CourtMarketGazetteHUD
 extends Control
 
 signal intent_emitted(cmd_type: String, args: Dictionary)
+signal validation_error_emitted(error_code: String)
+
+var _assets: AssetRegistry = null
+var _section_panels_slate: Array[PanelContainer] = []
+var _section_panels_gold: Array[PanelContainer] = []
+var _court_icon: TextureRect = null
+var _market_icon: TextureRect = null
+var _inbox_icon: TextureRect = null
+var _gazette_icon: TextureRect = null
+var _hegemony_icon: TextureRect = null
+var _cc_icon: TextureRect = null
 
 var _court_label: Label = null
 var _members_box: VBoxContainer = null
@@ -54,6 +65,59 @@ func _init() -> void:
 	_build_ui()
 
 
+func set_asset_registry(reg: AssetRegistry) -> void:
+	_assets = reg
+	if _assets == null:
+		return
+	var slate_sb: StyleBoxTexture = _assets.build_panel_stylebox(false)
+	var gold_sb: StyleBoxTexture = _assets.build_panel_stylebox(true)
+	for p_slate: PanelContainer in _section_panels_slate:
+		if p_slate != null:
+			p_slate.add_theme_stylebox_override("panel", slate_sb)
+	for p_gold: PanelContainer in _section_panels_gold:
+		if p_gold != null:
+			p_gold.add_theme_stylebox_override("panel", gold_sb)
+	if _court_icon != null:
+		_court_icon.texture = _assets.get_macro_node_icon("CAPITAL")
+	if _market_icon != null:
+		_market_icon.texture = _assets.get_resource_icon("COIN")
+	if _inbox_icon != null:
+		_inbox_icon.texture = _assets.get_emote_texture("AWAKENED_HEARTS", false)
+	if _gazette_icon != null:
+		_gazette_icon.texture = _assets.get_resource_icon("MERIT_PRESTIGE")
+	if _hegemony_icon != null:
+		_hegemony_icon.texture = _assets.get_army_icon("COALITION_FORCE")
+	if _cc_icon != null:
+		_cc_icon.texture = _assets.get_pawn_sprite(true, "LORD")
+
+
+func _make_section_panel(parent: VBoxContainer, use_gold: bool) -> VBoxContainer:
+	var panel: PanelContainer = PanelContainer.new()
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var inner: VBoxContainer = VBoxContainer.new()
+	panel.add_child(inner)
+	parent.add_child(panel)
+	if use_gold:
+		_section_panels_gold.append(panel)
+	else:
+		_section_panels_slate.append(panel)
+	return inner
+
+
+func _make_header_with_icon(parent: VBoxContainer, title_text: String) -> TextureRect:
+	var row: HBoxContainer = HBoxContainer.new()
+	var icon: TextureRect = TextureRect.new()
+	icon.custom_minimum_size = Vector2(20, 20)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	row.add_child(icon)
+	var hdr: Label = Label.new()
+	hdr.text = title_text
+	row.add_child(hdr)
+	parent.add_child(row)
+	return icon
+
+
 func _build_ui() -> void:
 	var scroll: ScrollContainer = ScrollContainer.new()
 	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -64,25 +128,23 @@ func _build_ui() -> void:
 	scroll.add_child(root)
 
 	# 1. Faction Court / 9-Rank HUD
-	var court_hdr: Label = Label.new()
-	court_hdr.text = "[정청 & 구품 관직 HUD]"
-	root.add_child(court_hdr)
+	var court_sec: VBoxContainer = _make_section_panel(root, false)
+	_court_icon = _make_header_with_icon(court_sec, "[정청 & 구품 관직 HUD]")
 
 	_court_label = Label.new()
 	_court_label.text = "세력: 무소속 | 신분: FREE_OFFICER | 품계: NONE | 작위: GOVERNOR_INSPECTOR"
-	root.add_child(_court_label)
+	court_sec.add_child(_court_label)
 
 	_members_box = VBoxContainer.new()
-	root.add_child(_members_box)
+	court_sec.add_child(_members_box)
 
 	# 2. Regional Market BID/ASK Order Book Panel
-	var mkt_hdr: Label = Label.new()
-	mkt_hdr.text = "[지역 지정가 거래소 (BID / ASK)]"
-	root.add_child(mkt_hdr)
+	var mkt_sec: VBoxContainer = _make_section_panel(root, false)
+	_market_icon = _make_header_with_icon(mkt_sec, "[지역 지정가 거래소 (BID / ASK)]")
 
 	_market_prices_label = Label.new()
 	_market_prices_label.text = "시세: GRAIN 1000bp | IRON 2000bp | WOOD 1500bp"
-	root.add_child(_market_prices_label)
+	mkt_sec.add_child(_market_prices_label)
 
 	var mkt_ctrl: HBoxContainer = HBoxContainer.new()
 	_mkt_node_edit = LineEdit.new()
@@ -115,28 +177,27 @@ func _build_ui() -> void:
 	btn_order.text = "주문 제출 (CMD_PLACE_MARKET_ORDER)"
 	btn_order.pressed.connect(_on_place_order_pressed)
 	mkt_ctrl.add_child(btn_order)
-	root.add_child(mkt_ctrl)
+	mkt_sec.add_child(mkt_ctrl)
 
 	_orders_box = VBoxContainer.new()
-	root.add_child(_orders_box)
+	mkt_sec.add_child(_orders_box)
 
 	# 3. Async Decision Inbox
-	var inbox_hdr: Label = Label.new()
-	inbox_hdr.text = "[비동기 결재 서신함 (Async Decision Inbox)]"
-	root.add_child(inbox_hdr)
+	var inbox_sec: VBoxContainer = _make_section_panel(root, false)
+	_inbox_icon = _make_header_with_icon(inbox_sec, "[비동기 결재 서신함 (Async Decision Inbox)]")
 
 	_inbox_box = VBoxContainer.new()
-	root.add_child(_inbox_box)
+	inbox_sec.add_child(_inbox_box)
 
 	# 4. Reconnect Morning Court Gazette Modal
 	_gazette_panel = PanelContainer.new()
 	_gazette_panel.visible = false
+	_gazette_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_section_panels_gold.append(_gazette_panel)
 	var gbox: VBoxContainer = VBoxContainer.new()
 	_gazette_panel.add_child(gbox)
 
-	var ghdr: Label = Label.new()
-	ghdr.text = "[조보: 지난 밤의 사기 브리핑 (MSG_OFFLINE_CHRONICLE_DIGEST)]"
-	gbox.add_child(ghdr)
+	_gazette_icon = _make_header_with_icon(gbox, "[조보: 지난 밤의 사기 브리핑 (MSG_OFFLINE_CHRONICLE_DIGEST)]")
 
 	_gazette_label = Label.new()
 	_gazette_label.text = "조보 내역 없음"
@@ -150,17 +211,15 @@ func _build_ui() -> void:
 	root.add_child(_gazette_panel)
 
 	# 5. Season Hegemony Leaderboard Panel
-	var heg_hdr: Label = Label.new()
-	heg_hdr.text = "[시즌 천하통일 결산 (천하 패자 / 개국 공신)]"
-	root.add_child(heg_hdr)
+	var heg_sec: VBoxContainer = _make_section_panel(root, true)
+	_hegemony_icon = _make_header_with_icon(heg_sec, "[시즌 천하통일 결산 (천하 패자 / 개국 공신)]")
 
 	_hegemony_box = VBoxContainer.new()
-	root.add_child(_hegemony_box)
+	heg_sec.add_child(_hegemony_box)
 
 	# 6. Character Creation Interview + TK3K2 Paste-Only Sealed Token Panel
-	var cc_hdr: Label = Label.new()
-	cc_hdr.text = "[장수 출사 인터뷰 & TK3K2 봉인 토큰 붙여넣기 전용 패널]"
-	root.add_child(cc_hdr)
+	var cc_sec: VBoxContainer = _make_section_panel(root, true)
+	_cc_icon = _make_header_with_icon(cc_sec, "[장수 출사 인터뷰 & TK3K2 봉인 토큰 붙여넣기 전용 패널]")
 
 	var cc_row1: HBoxContainer = HBoxContainer.new()
 	var n_lbl: Label = Label.new()
@@ -183,18 +242,18 @@ func _build_ui() -> void:
 	btn_chal.text = "일회성 챌린지 발급 (CMD_REQUEST_PERSONA_CHALLENGE)"
 	btn_chal.pressed.connect(_on_request_challenge_pressed)
 	cc_row1.add_child(btn_chal)
-	root.add_child(cc_row1)
+	cc_sec.add_child(cc_row1)
 
 	_cc_challenge_label = Label.new()
 	_cc_challenge_label.text = "챌린지 상태: 미발급"
-	root.add_child(_cc_challenge_label)
+	cc_sec.add_child(_cc_challenge_label)
 
 	# Read-only prompt display (NEVER editable raw JSON box!)
 	_cc_prompt_display = TextEdit.new()
 	_cc_prompt_display.editable = false
 	_cc_prompt_display.custom_minimum_size = Vector2(0, 72)
 	_cc_prompt_display.text = "외부 AI 프롬프트가 이곳에 읽기 전용으로 표시됩니다."
-	root.add_child(_cc_prompt_display)
+	cc_sec.add_child(_cc_prompt_display)
 
 	# Paste-only single-line sealed token input
 	var tok_row: HBoxContainer = HBoxContainer.new()
@@ -207,11 +266,11 @@ func _build_ui() -> void:
 	_cc_token_paste_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_cc_token_paste_edit.text_changed.connect(_on_token_text_changed)
 	tok_row.add_child(_cc_token_paste_edit)
-	root.add_child(tok_row)
+	cc_sec.add_child(tok_row)
 
 	_cc_preview_status_label = Label.new()
 	_cc_preview_status_label.text = "토큰 검증 대기"
-	root.add_child(_cc_preview_status_label)
+	cc_sec.add_child(_cc_preview_status_label)
 
 	# 8-Question Interview Option Selectors
 	var q_row: HBoxContainer = HBoxContainer.new()
@@ -223,12 +282,12 @@ func _build_ui() -> void:
 		q_opt.add_item("Q%d-D" % (qi + 1))
 		q_row.add_child(q_opt)
 		_cc_interview_opts.append(q_opt)
-	root.add_child(q_row)
+	cc_sec.add_child(q_row)
 
 	var btn_submit_cc: Button = Button.new()
 	btn_submit_cc.text = "캐릭터 출사 확정 (CMD_CREATE_CHARACTER)"
 	btn_submit_cc.pressed.connect(_on_submit_cc_pressed)
-	root.add_child(btn_submit_cc)
+	cc_sec.add_child(btn_submit_cc)
 
 
 func _on_place_order_pressed() -> void:
@@ -331,6 +390,8 @@ func submit_character_creation(
 		if not check.get("ok", false):
 			var err_code: String = str(check.get("error_code", DtoSchemas.ERR_TOKEN_FORMAT))
 			_cc_preview_status_label.text = "제출 거부: " + err_code
+			if err_code == DtoSchemas.ERR_PLAINTEXT_JSON_FORBIDDEN:
+				validation_error_emitted.emit(err_code)
 			return {"ok": false, "error_code": err_code}
 
 	var args: Dictionary = {

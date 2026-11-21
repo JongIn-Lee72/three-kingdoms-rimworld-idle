@@ -2,7 +2,8 @@ extends SceneTree
 
 const CORE_REQUIRED_FILES: Array[String] = [
 	"res://data/schemas/world_state_schema.sql",
-	"res://data/persona_seal_rules.json"
+	"res://data/persona_seal_rules.json",
+	"res://data/assets_manifest.json"
 ]
 
 const OPTIONAL_FUTURE_FILES: Array[String] = [
@@ -57,6 +58,7 @@ func _init() -> void:
 
 		_validate_sql_schema("res://data/schemas/world_state_schema.sql", errors)
 		_validate_persona_seal_rules("res://data/persona_seal_rules.json", errors)
+		_validate_assets_manifest("res://data/assets_manifest.json", errors)
 
 		for opt_path: String in OPTIONAL_FUTURE_FILES:
 			if FileAccess.file_exists(opt_path):
@@ -275,3 +277,67 @@ func _validate_optional_file(path: String, errors: Array[String]) -> void:
 	elif path.ends_with("storytellers.json"):
 		if not (parsed is Dictionary) and not (parsed is Array):
 			errors.append("storytellers.json must be Object or Array")
+
+
+func _validate_assets_manifest(path: String, errors: Array[String]) -> void:
+	var parsed: Variant = _load_and_parse_json(path, errors)
+	if not (parsed is Dictionary):
+		errors.append("assets_manifest.json root must be a JSON Object")
+		return
+	var manifest: Dictionary = parsed
+
+	if str(manifest.get("schema_version", "")) != "ASSETS_MANIFEST_V1":
+		errors.append("assets_manifest.json schema_version must be ASSETS_MANIFEST_V1")
+
+	var allowed_licenses: Array[String] = ["CC0-1.0", "Original-Project-CC0"]
+	var assets_var: Variant = manifest.get("assets", null)
+	if not (assets_var is Array):
+		errors.append("assets_manifest.json missing assets array")
+	else:
+		var assets: Array = assets_var
+		if assets.is_empty():
+			errors.append("assets_manifest.json assets array must not be empty")
+		for idx: int in range(assets.size()):
+			var entry_var: Variant = assets[idx]
+			if not (entry_var is Dictionary):
+				errors.append("assets_manifest.json assets[%d] must be Object" % idx)
+				continue
+			var entry: Dictionary = entry_var
+			var asset_path: String = str(entry.get("path", ""))
+			if asset_path.is_empty():
+				errors.append("assets_manifest.json assets[%d] missing path" % idx)
+			elif not FileAccess.file_exists(asset_path):
+				errors.append("assets_manifest.json missing asset file on disk: " + asset_path)
+			var byte_count: int = _to_int(entry.get("bytes", 0), 0)
+			if byte_count <= 0:
+				errors.append("assets_manifest.json assets[%d] bytes must be > 0 (%s)" % [idx, asset_path])
+			var license_str: String = str(entry.get("license", ""))
+			if not allowed_licenses.has(license_str):
+				errors.append("assets_manifest.json assets[%d] invalid license '%s' (%s)" % [idx, license_str, asset_path])
+
+	var sfx_var: Variant = manifest.get("sfx_event_map", null)
+	if not (sfx_var is Dictionary):
+		errors.append("assets_manifest.json missing sfx_event_map object")
+	else:
+		var sfx_map: Dictionary = sfx_var
+		if sfx_map.is_empty():
+			errors.append("assets_manifest.json sfx_event_map must not be empty")
+		for event_key_v: Variant in sfx_map.keys():
+			var event_key: String = str(event_key_v)
+			var sfx_path: String = str(sfx_map[event_key_v])
+			if sfx_path.is_empty() or not FileAccess.file_exists(sfx_path):
+				errors.append("assets_manifest.json sfx_event_map[%s] missing file on disk: %s" % [event_key, sfx_path])
+
+	var bgm_var: Variant = manifest.get("bgm_tracks", null)
+	if not (bgm_var is Dictionary):
+		errors.append("assets_manifest.json missing bgm_tracks object")
+	else:
+		var bgm_map: Dictionary = bgm_var
+		if bgm_map.is_empty():
+			errors.append("assets_manifest.json bgm_tracks must not be empty")
+		for track_key_v: Variant in bgm_map.keys():
+			var track_key: String = str(track_key_v)
+			var bgm_path: String = str(bgm_map[track_key_v])
+			if bgm_path.is_empty() or not FileAccess.file_exists(bgm_path):
+				errors.append("assets_manifest.json bgm_tracks[%s] missing file on disk: %s" % [track_key, bgm_path])
+

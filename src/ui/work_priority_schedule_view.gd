@@ -25,6 +25,13 @@ const PRISONER_OPTIONS: Array[String] = [
 	"RECRUIT_PERSUADE", "RANSOM", "RELEASE_CHIVALROUS"
 ]
 
+var _assets: AssetRegistry = null
+var _section_panels_slate: Array[PanelContainer] = []
+var _section_panels_gold: Array[PanelContainer] = []
+var _prio_icon: TextureRect = null
+var _sched_icon: TextureRect = null
+var _doctrine_icon: TextureRect = null
+
 var _pawn_selector: OptionButton = null
 var _priority_buttons: Dictionary = {}   # domain -> Array[Button]
 var _schedule_selectors: Array[OptionButton] = []
@@ -67,6 +74,53 @@ func _init() -> void:
 	_build_ui()
 
 
+func set_asset_registry(reg: AssetRegistry) -> void:
+	_assets = reg
+	if _assets == null:
+		return
+	var slate_sb: StyleBoxTexture = _assets.build_panel_stylebox(false)
+	var gold_sb: StyleBoxTexture = _assets.build_panel_stylebox(true)
+	for p_slate: PanelContainer in _section_panels_slate:
+		if p_slate != null:
+			p_slate.add_theme_stylebox_override("panel", slate_sb)
+	for p_gold: PanelContainer in _section_panels_gold:
+		if p_gold != null:
+			p_gold.add_theme_stylebox_override("panel", gold_sb)
+	if _prio_icon != null:
+		_prio_icon.texture = _assets.get_zone_tile("ZONE_WORKSHOP")
+	if _sched_icon != null:
+		_sched_icon.texture = _assets.get_resource_icon("HERBS_WINE")
+	if _doctrine_icon != null:
+		_doctrine_icon.texture = _assets.get_resource_icon("WEAPONS")
+
+
+func _make_section_panel(parent: VBoxContainer, use_gold: bool) -> VBoxContainer:
+	var panel: PanelContainer = PanelContainer.new()
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var inner: VBoxContainer = VBoxContainer.new()
+	panel.add_child(inner)
+	parent.add_child(panel)
+	if use_gold:
+		_section_panels_gold.append(panel)
+	else:
+		_section_panels_slate.append(panel)
+	return inner
+
+
+func _make_header_with_icon(parent: VBoxContainer, title_text: String) -> TextureRect:
+	var row: HBoxContainer = HBoxContainer.new()
+	var icon: TextureRect = TextureRect.new()
+	icon.custom_minimum_size = Vector2(20, 20)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	row.add_child(icon)
+	var hdr: Label = Label.new()
+	hdr.text = title_text
+	row.add_child(hdr)
+	parent.add_child(row)
+	return icon
+
+
 func _build_ui() -> void:
 	var scroll: ScrollContainer = ScrollContainer.new()
 	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -76,9 +130,10 @@ func _build_ui() -> void:
 	root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(root)
 
+	var top_sec: VBoxContainer = _make_section_panel(root, false)
 	var title: Label = Label.new()
 	title.text = "업무 우선순위 (0..4) & 십이지시 일과표 & 상시 교전 수칙"
-	root.add_child(title)
+	top_sec.add_child(title)
 
 	var pawn_row: HBoxContainer = HBoxContainer.new()
 	var pawn_lbl: Label = Label.new()
@@ -88,12 +143,11 @@ func _build_ui() -> void:
 	_pawn_selector = OptionButton.new()
 	_pawn_selector.item_selected.connect(_on_pawn_selected)
 	pawn_row.add_child(_pawn_selector)
-	root.add_child(pawn_row)
+	top_sec.add_child(pawn_row)
 
 	# 7-domain 0..4 priority buttons
-	var prio_hdr: Label = Label.new()
-	prio_hdr.text = "[7대 업무 우선순위 매트릭스 (0=금지, 1=최우선..4=후순위)]"
-	root.add_child(prio_hdr)
+	var prio_sec: VBoxContainer = _make_section_panel(root, false)
+	_prio_icon = _make_header_with_icon(prio_sec, "[7대 업무 우선순위 매트릭스 (0=금지, 1=최우선..4=후순위)]")
 
 	for domain: String in PawnEntity.WORK_DOMAINS:
 		var row: HBoxContainer = HBoxContainer.new()
@@ -112,16 +166,15 @@ func _build_ui() -> void:
 			row.add_child(b)
 			btns.append(b)
 		_priority_buttons[domain] = btns
-		root.add_child(row)
+		prio_sec.add_child(row)
 
 	# 12-ShiChen schedule editor
-	var sched_hdr: Label = Label.new()
-	sched_hdr.text = "[십이지시(12-ShiChen) 일과표]"
-	root.add_child(sched_hdr)
+	var sched_sec: VBoxContainer = _make_section_panel(root, false)
+	_sched_icon = _make_header_with_icon(sched_sec, "[십이지시(12-ShiChen) 일과표]")
 
 	var sched_grid: GridContainer = GridContainer.new()
 	sched_grid.columns = 4
-	root.add_child(sched_grid)
+	sched_sec.add_child(sched_grid)
 
 	for si: int in range(12):
 		var cell: VBoxContainer = VBoxContainer.new()
@@ -143,23 +196,22 @@ func _build_ui() -> void:
 	_schedule_apply_btn = Button.new()
 	_schedule_apply_btn.text = "일과표 전체 적용 (CMD_SET_SCHEDULE)"
 	_schedule_apply_btn.pressed.connect(_on_apply_schedule_pressed)
-	root.add_child(_schedule_apply_btn)
+	sched_sec.add_child(_schedule_apply_btn)
 
 	# Standing Tactical Doctrine selector
-	var doc_hdr: Label = Label.new()
-	doc_hdr.text = "[상시 교전 수칙 (Standing Tactical Doctrine)]"
-	root.add_child(doc_hdr)
+	var doc_sec: VBoxContainer = _make_section_panel(root, true)
+	_doctrine_icon = _make_header_with_icon(doc_sec, "[상시 교전 수칙 (Standing Tactical Doctrine)]")
 
-	_stance_opt = _make_option_row(root, "교전 태세:", STANCE_OPTIONS)
-	_formation_opt = _make_option_row(root, "기본 진형:", FORMATION_OPTIONS)
-	_duel_opt = _make_option_row(root, "일기토 수칙:", DUEL_OPTIONS)
-	_stratagem_opt = _make_option_row(root, "계략 방침:", STRATAGEM_OPTIONS)
-	_prisoner_opt = _make_option_row(root, "포로 처우:", PRISONER_OPTIONS)
+	_stance_opt = _make_option_row(doc_sec, "교전 태세:", STANCE_OPTIONS)
+	_formation_opt = _make_option_row(doc_sec, "기본 진형:", FORMATION_OPTIONS)
+	_duel_opt = _make_option_row(doc_sec, "일기토 수칙:", DUEL_OPTIONS)
+	_stratagem_opt = _make_option_row(doc_sec, "계략 방침:", STRATAGEM_OPTIONS)
+	_prisoner_opt = _make_option_row(doc_sec, "포로 처우:", PRISONER_OPTIONS)
 
 	_doctrine_apply_btn = Button.new()
 	_doctrine_apply_btn.text = "교전 수칙 저장 (CMD_SET_DOCTRINE)"
 	_doctrine_apply_btn.pressed.connect(_on_apply_doctrine_pressed)
-	root.add_child(_doctrine_apply_btn)
+	doc_sec.add_child(_doctrine_apply_btn)
 
 
 func _make_option_row(parent: VBoxContainer, label_text: String, items: Array[String]) -> OptionButton:

@@ -3,6 +3,13 @@ extends Control
 
 signal intent_emitted(cmd_type: String, args: Dictionary)
 
+var _assets: AssetRegistry = null
+var _map_panel: PanelContainer = null
+var _map_canvas: Control = null
+var _section_panels_slate: Array[PanelContainer] = []
+var _static_nodes: Dictionary = {}
+var _static_edges: Array[Dictionary] = []
+
 var _summary_label: Label = null
 var _nodes_box: VBoxContainer = null
 var _armies_box: VBoxContainer = null
@@ -33,10 +40,107 @@ static func _to_int(v: Variant, fallback: int = 0) -> int:
 	return fallback
 
 
+static func _terrain_color(terrain_type: String) -> Color:
+	match terrain_type:
+		"HIGHWAY":
+			return Color(0.86, 0.69, 0.34, 0.90)
+		"MOUNTAIN_PATH":
+			return Color(0.58, 0.42, 0.30, 0.90)
+		"WATERWAY":
+			return Color(0.32, 0.64, 0.78, 0.90)
+		_:
+			return Color(0.70, 0.65, 0.55, 0.85)
+
+
+static func _faction_ring_color(faction_id: String) -> Color:
+	var upper: String = faction_id.to_upper()
+	if upper == "" or upper == "NEUTRAL":
+		return Color(0.62, 0.60, 0.54, 0.95)
+	if upper.contains("YELLOW") or upper.contains("TURBAN"):
+		return Color(0.92, 0.78, 0.24, 0.98)
+	if upper.contains("WEI") or upper.contains("CAO"):
+		return Color(0.30, 0.56, 0.90, 0.98)
+	if upper.contains("WU") or upper.contains("SUN"):
+		return Color(0.28, 0.74, 0.46, 0.98)
+	if upper.contains("SHU") or upper.contains("HAN") or upper.contains("LIU"):
+		return Color(0.84, 0.30, 0.26, 0.98)
+	return AssetRegistry.COLOR_GOLD_HIGHLIGHT
+
+
 func _init() -> void:
 	name = "MacroMapView"
 	set_anchors_preset(Control.PRESET_FULL_RECT)
+	_load_static_map_geometry()
 	_build_ui()
+
+
+func set_asset_registry(reg: AssetRegistry) -> void:
+	_assets = reg
+	if _assets == null:
+		return
+	if _map_panel != null:
+		_map_panel.add_theme_stylebox_override("panel", _assets.build_panel_stylebox(true))
+	var slate_sb: StyleBoxTexture = _assets.build_panel_stylebox(false)
+	for p_slate: PanelContainer in _section_panels_slate:
+		if p_slate != null:
+			p_slate.add_theme_stylebox_override("panel", slate_sb)
+	if _map_canvas != null:
+		_map_canvas.queue_redraw()
+
+
+func get_map_canvas_node() -> Control:
+	return _map_canvas
+
+
+func get_static_edge_count() -> int:
+	return _static_edges.size()
+
+
+func _make_section_panel(parent: VBoxContainer) -> VBoxContainer:
+	var panel: PanelContainer = PanelContainer.new()
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var inner: VBoxContainer = VBoxContainer.new()
+	panel.add_child(inner)
+	parent.add_child(panel)
+	_section_panels_slate.append(panel)
+	return inner
+
+
+func _load_static_map_geometry(path: String = "res://data/macro_map_3k.json") -> void:
+	_static_nodes.clear()
+	_static_edges.clear()
+	if not FileAccess.file_exists(path):
+		return
+	var f: FileAccess = FileAccess.open(path, FileAccess.READ)
+	if f == null:
+		return
+	var txt: String = f.get_as_text()
+	f.close()
+	if txt.strip_edges().is_empty():
+		return
+	var parser: JSON = JSON.new()
+	if parser.parse(txt) != OK:
+		return
+	var norm: Variant = DtoSchemas.normalize_json_ints(parser.data)
+	if not (norm is Dictionary):
+		return
+	var root_d: Dictionary = norm
+	var nodes_v: Variant = root_d.get("nodes", [])
+	if nodes_v is Array:
+		var nodes_a: Array = nodes_v
+		for nv: Variant in nodes_a:
+			if nv is Dictionary:
+				var nd: Dictionary = nv
+				var nid: String = str(nd.get("node_id", ""))
+				if not nid.is_empty():
+					_static_nodes[nid] = nd.duplicate(true)
+	var edges_v: Variant = root_d.get("edges", [])
+	if edges_v is Array:
+		var edges_a: Array = edges_v
+		for ev: Variant in edges_a:
+			if ev is Dictionary:
+				var ed: Dictionary = ev
+				_static_edges.append(ed.duplicate(true))
 
 
 func _build_ui() -> void:
@@ -52,31 +156,44 @@ func _build_ui() -> void:
 	_summary_label.text = "천하 전략도 그래프 (15개 주요 거점) | 군단/상단: 0 | 연합 집결: 0"
 	root.add_child(_summary_label)
 
+	_map_panel = PanelContainer.new()
+	_map_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_map_canvas = Control.new()
+	_map_canvas.custom_minimum_size = Vector2(560, 320)
+	_map_canvas.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_map_canvas.draw.connect(_on_map_canvas_draw)
+	_map_panel.add_child(_map_canvas)
+	root.add_child(_map_panel)
+
+	var nodes_sec: VBoxContainer = _make_section_panel(root)
 	var nodes_hdr: Label = Label.new()
 	nodes_hdr.text = "[거점 현황 (주/세력/성벽/치안)]"
-	root.add_child(nodes_hdr)
+	nodes_sec.add_child(nodes_hdr)
 
 	_nodes_box = VBoxContainer.new()
-	root.add_child(_nodes_box)
+	nodes_sec.add_child(_nodes_box)
 
+	var armies_sec: VBoxContainer = _make_section_panel(root)
 	var armies_hdr: Label = Label.new()
 	armies_hdr.text = "[출진 군단 및 무역 상단]"
-	root.add_child(armies_hdr)
+	armies_sec.add_child(armies_hdr)
 
 	_armies_box = VBoxContainer.new()
-	root.add_child(_armies_box)
+	armies_sec.add_child(_armies_box)
 
+	var rallies_sec: VBoxContainer = _make_section_panel(root)
 	var rallies_hdr: Label = Label.new()
 	rallies_hdr.text = "[연합 공성전 집결 현황]"
-	root.add_child(rallies_hdr)
+	rallies_sec.add_child(rallies_hdr)
 
 	_rallies_box = VBoxContainer.new()
-	root.add_child(_rallies_box)
+	rallies_sec.add_child(_rallies_box)
 
 	# Expedition & Coalition Rally Controls
+	var ctrl_sec: VBoxContainer = _make_section_panel(root)
 	var ctrl_hdr: Label = Label.new()
 	ctrl_hdr.text = "[출진 / 상단 파견 & 연합 공성 집결 명령]"
-	root.add_child(ctrl_hdr)
+	ctrl_sec.add_child(ctrl_hdr)
 
 	var row1: HBoxContainer = HBoxContainer.new()
 	var tgt_lbl: Label = Label.new()
@@ -92,7 +209,7 @@ func _build_ui() -> void:
 	_unit_type_opt.add_item("ARMY")
 	_unit_type_opt.add_item("CARAVAN")
 	row1.add_child(_unit_type_opt)
-	root.add_child(row1)
+	ctrl_sec.add_child(row1)
 
 	var row2: HBoxContainer = HBoxContainer.new()
 	var tr_lbl: Label = Label.new()
@@ -112,7 +229,7 @@ func _build_ui() -> void:
 	_grain_spin.max_value = 50000
 	_grain_spin.value = 200
 	row2.add_child(_grain_spin)
-	root.add_child(row2)
+	ctrl_sec.add_child(row2)
 
 	var row3: HBoxContainer = HBoxContainer.new()
 	var path_lbl: Label = Label.new()
@@ -127,7 +244,7 @@ func _build_ui() -> void:
 	btn_dispatch.text = "출진/파견 (CMD_DISPATCH_EXPEDITION)"
 	btn_dispatch.pressed.connect(_on_dispatch_pressed)
 	row3.add_child(btn_dispatch)
-	root.add_child(row3)
+	ctrl_sec.add_child(row3)
 
 	var row4: HBoxContainer = HBoxContainer.new()
 	var btn_create_rally: Button = Button.new()
@@ -143,7 +260,7 @@ func _build_ui() -> void:
 	btn_join_rally.text = "연합 집결 합류 (CMD_JOIN_COALITION_RALLY)"
 	btn_join_rally.pressed.connect(_on_join_rally_pressed)
 	row4.add_child(btn_join_rally)
-	root.add_child(row4)
+	ctrl_sec.add_child(row4)
 
 	_load_default_nodes_preview()
 
@@ -154,6 +271,122 @@ func _load_default_nodes_preview() -> void:
 	for nid: String in wg.get_node_ids():
 		init_nodes[nid] = wg.get_node(nid)
 	apply_snapshot({"nodes": init_nodes})
+
+
+func _node_screen_pos(node_id: String, canvas_size: Vector2) -> Vector2:
+	var nd: Dictionary = {}
+	if _cached_nodes.has(node_id) and _cached_nodes[node_id] is Dictionary:
+		nd = _cached_nodes[node_id]
+	var st: Dictionary = {}
+	if _static_nodes.has(node_id) and _static_nodes[node_id] is Dictionary:
+		st = _static_nodes[node_id]
+	var nx: int = _to_int(nd.get("x", st.get("x", 500)), 500)
+	var ny: int = _to_int(nd.get("y", st.get("y", 500)), 500)
+	var pad_x: float = 28.0
+	var pad_y: float = 24.0
+	var usable_w: float = maxf(64.0, canvas_size.x - pad_x * 2.0)
+	var usable_h: float = maxf(64.0, canvas_size.y - pad_y * 2.0)
+	return Vector2(
+		pad_x + (float(nx) / 1000.0) * usable_w,
+		pad_y + (float(ny) / 1000.0) * usable_h
+	)
+
+
+func _on_map_canvas_draw() -> void:
+	if _map_canvas == null:
+		return
+	var canvas_size: Vector2 = _map_canvas.size
+	if canvas_size.x <= 0.0 or canvas_size.y <= 0.0:
+		canvas_size = _map_canvas.custom_minimum_size
+	var canvas_rect: Rect2 = Rect2(Vector2.ZERO, canvas_size)
+	_map_canvas.draw_rect(canvas_rect, AssetRegistry.COLOR_LACQUER_BG)
+
+	if _assets != null:
+		var map_bg: Texture2D = _assets.get_texture(AssetRegistry.MAP_BG)
+		if map_bg != null:
+			_map_canvas.draw_texture_rect(map_bg, canvas_rect, false)
+		_map_canvas.draw_rect(canvas_rect, Color(0.08, 0.06, 0.05, 0.18))
+
+	for ed: Dictionary in _static_edges:
+		var from_id: String = str(ed.get("from_node", ""))
+		var to_id: String = str(ed.get("to_node", ""))
+		if from_id.is_empty() or to_id.is_empty():
+			continue
+		var p1: Vector2 = _node_screen_pos(from_id, canvas_size)
+		var p2: Vector2 = _node_screen_pos(to_id, canvas_size)
+		var terrain: String = str(ed.get("terrain_type", "HIGHWAY"))
+		_map_canvas.draw_line(p1, p2, _terrain_color(terrain), 2.5, true)
+
+	var node_ids: Array[String] = []
+	for k: Variant in _static_nodes.keys():
+		node_ids.append(str(k))
+	for ck: Variant in _cached_nodes.keys():
+		var cks: String = str(ck)
+		if not node_ids.has(cks):
+			node_ids.append(cks)
+	node_ids.sort()
+
+	var font: Font = ThemeDB.fallback_font
+	for nid: String in node_ids:
+		var nd: Dictionary = _cached_nodes[nid] if _cached_nodes.has(nid) and _cached_nodes[nid] is Dictionary else {}
+		var st: Dictionary = _static_nodes[nid] if _static_nodes.has(nid) and _static_nodes[nid] is Dictionary else {}
+		var pos: Vector2 = _node_screen_pos(nid, canvas_size)
+		var tier: String = str(nd.get("node_tier", st.get("node_tier", "COUNTY")))
+		var owner_fid: String = str(nd.get("owner_faction_id", st.get("owner_faction_id", "NEUTRAL")))
+		var name_ko: String = str(nd.get("name_ko", st.get("name_ko", nid)))
+		var radius: float = 13.0 if tier == "CAPITAL" else (11.0 if tier == "CITY" or tier == "PASS" else 9.0)
+		var ring_col: Color = _faction_ring_color(owner_fid)
+
+		_map_canvas.draw_circle(pos, radius + 2.0, Color(0.08, 0.06, 0.05, 0.85))
+		_map_canvas.draw_arc(pos, radius + 2.0, 0.0, TAU, 24, ring_col, 2.5, true)
+
+		var icon_rect: Rect2 = Rect2(pos - Vector2(radius, radius), Vector2(radius * 2.0, radius * 2.0))
+		if _assets != null:
+			var ntex: Texture2D = _assets.get_macro_node_icon(tier)
+			if ntex != null:
+				_map_canvas.draw_texture_rect(ntex, icon_rect, false)
+			else:
+				_map_canvas.draw_circle(pos, radius, ring_col)
+		else:
+			_map_canvas.draw_circle(pos, radius, ring_col)
+
+		if font != null:
+			_map_canvas.draw_string(
+				font,
+				pos + Vector2(-18.0, radius + 14.0),
+				name_ko,
+				HORIZONTAL_ALIGNMENT_LEFT,
+				-1,
+				11,
+				AssetRegistry.COLOR_PARCHMENT_TEXT
+			)
+
+	var army_ids: Array[String] = []
+	for ak: Variant in _cached_armies.keys():
+		army_ids.append(str(ak))
+	army_ids.sort()
+	for idx: int in range(army_ids.size()):
+		var eid: String = army_ids[idx]
+		var ent_v: Variant = _cached_armies.get(eid, null)
+		if not (ent_v is Dictionary):
+			continue
+		var ent: Dictionary = ent_v
+		var cur_nid: String = str(ent.get("current_node_id", ""))
+		if cur_nid.is_empty():
+			continue
+		var base_pos: Vector2 = _node_screen_pos(cur_nid, canvas_size)
+		var offset: Vector2 = Vector2(14.0 + float((idx % 3) * 10), -14.0 - float((idx / 3) * 10))
+		var apos: Vector2 = base_pos + offset
+		var utype: String = str(ent.get("unit_type", "ARMY"))
+		var arect: Rect2 = Rect2(apos - Vector2(9.0, 9.0), Vector2(18.0, 18.0))
+		if _assets != null:
+			var atex: Texture2D = _assets.get_army_icon(utype)
+			if atex != null:
+				_map_canvas.draw_texture_rect(atex, arect, false)
+			else:
+				_map_canvas.draw_rect(arect, AssetRegistry.COLOR_CRIMSON_ACCENT)
+		else:
+			_map_canvas.draw_rect(arect, AssetRegistry.COLOR_CRIMSON_ACCENT)
 
 
 func _on_dispatch_pressed() -> void:
@@ -350,6 +583,9 @@ func _redraw_lists() -> void:
 			_to_int(ral.get("participant_count", 1), 1)
 		]
 		_rallies_box.add_child(lbl_r)
+
+	if _map_canvas != null:
+		_map_canvas.queue_redraw()
 
 
 func get_node_count() -> int:
