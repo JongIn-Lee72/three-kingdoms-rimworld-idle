@@ -1,0 +1,255 @@
+{
+  "schema_version": "M2_ITEMS_BUILDINGS_V1",
+  "resources": {
+    "GRAIN": { "name_ko": "군량", "base_value": 10 },
+    "COIN": { "name_ko": "엽전", "base_value": 20 },
+    "WOOD": { "name_ko": "목재", "base_value": 15 },
+    "IRON": { "name_ko": "철광", "base_value": 30 },
+    "HORSES": { "name_ko": "군마", "base_value": 100 },
+    "HERBS_WINE": { "name_ko": "약재/명주", "base_value": 50 },
+    "WEAPONS": { "name_ko": "병기", "base_value": 80 },
+    "MERIT": { "name_ko": "공적", "base_value": 200 }
+  },
+  "zones": [
+    "ZONE_FARMLAND",
+    "ZONE_STOCKPILE",
+    "ZONE_HIDDEN_VAULT",
+    "ZONE_BARRACKS",
+    "ZONE_WORKSHOP",
+    "ZONE_RESIDENCE",
+    "ZONE_INFIRMARY",
+    "ZONE_DEFENSE_LINE"
+  ],
+  "quality_tiers": {
+    "POOR": { "name_ko": "조악", "multiplier_bp": 800 },
+    "NORMAL": { "name_ko": "일반", "multiplier_bp": 1000 },
+    "GOOD": { "name_ko": "양품", "multiplier_bp": 1150 },
+    "EXCELLENT": { "name_ko": "명품", "multiplier_bp": 1300 },
+    "MASTERWORK": { "name_ko": "걸작", "multiplier_bp": 1550 },
+    "LEGENDARY": { "name_ko": "신물", "multiplier_bp": 1800 }
+  },
+  "buildings": {
+    "MAIN_HALL": {
+      "name_ko": "본영 관아",
+      "levels": {
+        "1": { "cost": { "WOOD": 100, "IRON": 20, "COIN": 50 }, "capacity_bonus": 10, "effect_bp": 1000 },
+        "2": { "cost": { "WOOD": 250, "IRON": 50, "COIN": 150 }, "capacity_bonus": 20, "effect_bp": 1150 },
+        "3": { "cost": { "WOOD": 500, "IRON": 120, "COIN": 400 }, "capacity_bonus": 35, "effect_bp": 1300 },
+        "4": { "cost": { "WOOD": 1000, "IRON": 300, "COIN": 1000 }, "capacity_bonus": 50, "effect_bp": 1500 },
+        "5": { "cost": { "WOOD": 2000, "IRON": 700, "COIN": 2500 }, "capacity_bonus": 80, "effect_bp": 1800 }
+      }
+    },
+    "QUARTERS": {
+      "name_ko": "가신 숙소",
+      "levels": {
+        "1": { "cost": { "WOOD": 60, "IRON": 10, "COIN": 30 }, "capacity_bonus": 4, "effect_bp": 1000 },
+        "2": { "cost": { "WOOD": 150, "IRON": 30, "COIN": 80 }, "capacity_bonus": 8, "effect_bp": 1150 },
+        "3": { "cost": { "WOOD": 350, "IRON": 80, "COIN": 200 }, "capacity_bonus": 14, "effect_bp": 1300 },
+        "4": { "cost": { "WOOD": 700, "IRON": 180, "COIN": 500 }, "capacity_bonus": 22, "effect_bp": 1500 },
+        "5": { "cost": { "WOOD": 1400, "IRON": 400, "COIN": 1200 }, "capacity_bonus": 32, "effect_bp": 1800 }
+      }
+    },
+    "MILITARY_FARM": {
+      "name_ko": "둔전",
+      "levels": {
+        "1": { "cost": { "WOOD": 80, "IRON": 10, "COIN": 20 }, "capacity_bonus": 100, "effect_bp": 1000 },
+        "2": { "cost": { "WOOD": 200, "IRON": 30, "COIN": 60 }, "capacity_bonus": 250, "effect_bp": 1200 },
+        "3": { "cost": { "WOOD": 450, "IRON": 80, "COIN": 180 }, "capacity_bonus": 500, "effect_bp": 1450 },
+        "4": { "cost": { "WOOD": 900, "IRON": 200, "COIN": 450 }, "capacity_bonus": 1000, "effect_bp": 1750 },
+        "5": { "cost": { "WOOD": 1800, "IRON": 500, "COIN": 1100 }, "capacity_bonus": 2000, "effect_bp": 2100 }
+      }
+    },
+    "GRANARY_VAULT": {
+      "name_ko": "군량고",
+      "levels": {
+        "1": { "cost": { "WOOD": 90, "IRON": 15, "COIN": 30 }, "capacity_bonus": 500, "effect_bp": 1000 },
+        "2": { "cost": { "WOOD": 220, "IRON": 40, "COIN": 90 }, "capacity_bonus": 1200, "effect_bp": 1150 },
+        "3": { "cost": { "WOOD": 500, "IRON": 100, "COIN": 250 }, "capacity_bonus": 3000, "effect_bp": 1300 },
+        "4": { "cost": { "WOOD": 1100, "IRON": 250, "COIN": 650 }, "capacity_bonus": 7000, "effect_bp": 1500 },
+        "5": { "cost": { "WOOD": 2300, "IRON": 600, "COIN": 1500 }, "capacity_bonus": 15000, "effect_bp": 1800 }
+      }
+    },
+    "HORSE_PASTURE": {
+      "name_ko": "군마 목장",
+      "levels": {
+        "1": { "cost": { "WOOD": 100, "IRON": 20, "COIN": 40 }, "capacity_bonus": 20, "effect_bp": 1000 },
+        "2": { "cost": { "WOOD": 250, "IRON": 50, "COIN": 120 }, "capacity_bonus": 50, "effect_bp": 1200 },
+        "3": { "cost": { "WOOD": 550, "IRON": 120, "COIN": 350 }, "capacity_bonus": 120, "effect_bp": 1450 },
+        "4": { "cost": { "WOOD": 1200, "IRON": 300, "COIN": 900 }, "capacity_bonus": 250, "effect_bp": 1750 },
+        "5": { "cost": { "WOOD": 2500, "IRON": 750, "COIN": 2200 }, "capacity_bonus": 500, "effect_bp": 2100 }
+      }
+    },
+    "SMITHY_ARMORY": {
+      "name_ko": "대장간",
+      "levels": {
+        "1": { "cost": { "WOOD": 120, "IRON": 50, "COIN": 80 }, "capacity_bonus": 10, "effect_bp": 1000 },
+        "2": { "cost": { "WOOD": 300, "IRON": 130, "COIN": 220 }, "capacity_bonus": 25, "effect_bp": 1200 },
+        "3": { "cost": { "WOOD": 700, "IRON": 320, "COIN": 600 }, "capacity_bonus": 60, "effect_bp": 1450 },
+        "4": { "cost": { "WOOD": 1500, "IRON": 800, "COIN": 1500 }, "capacity_bonus": 130, "effect_bp": 1750 },
+        "5": { "cost": { "WOOD": 3200, "IRON": 1900, "COIN": 3800 }, "capacity_bonus": 300, "effect_bp": 2100 }
+      }
+    },
+    "BARRACKS_DRILL": {
+      "name_ko": "병영",
+      "levels": {
+        "1": { "cost": { "WOOD": 150, "IRON": 30, "COIN": 60 }, "capacity_bonus": 50, "effect_bp": 1000 },
+        "2": { "cost": { "WOOD": 380, "IRON": 80, "COIN": 180 }, "capacity_bonus": 120, "effect_bp": 1200 },
+        "3": { "cost": { "WOOD": 850, "IRON": 200, "COIN": 500 }, "capacity_bonus": 300, "effect_bp": 1450 },
+        "4": { "cost": { "WOOD": 1800, "IRON": 500, "COIN": 1300 }, "capacity_bonus": 700, "effect_bp": 1750 },
+        "5": { "cost": { "WOOD": 3800, "IRON": 1200, "COIN": 3200 }, "capacity_bonus": 1500, "effect_bp": 2100 }
+      }
+    },
+    "STUDY_PAVILION": {
+      "name_ko": "서책관",
+      "levels": {
+        "1": { "cost": { "WOOD": 100, "IRON": 10, "COIN": 70 }, "capacity_bonus": 5, "effect_bp": 1000 },
+        "2": { "cost": { "WOOD": 250, "IRON": 30, "COIN": 180 }, "capacity_bonus": 12, "effect_bp": 1200 },
+        "3": { "cost": { "WOOD": 600, "IRON": 80, "COIN": 450 }, "capacity_bonus": 25, "effect_bp": 1450 },
+        "4": { "cost": { "WOOD": 1300, "IRON": 200, "COIN": 1100 }, "capacity_bonus": 50, "effect_bp": 1750 },
+        "5": { "cost": { "WOOD": 2800, "IRON": 500, "COIN": 2800 }, "capacity_bonus": 100, "effect_bp": 2100 }
+      }
+    },
+    "BANQUET_HALL": {
+      "name_ko": "연회청",
+      "levels": {
+        "1": { "cost": { "WOOD": 120, "IRON": 10, "COIN": 100 }, "capacity_bonus": 10, "effect_bp": 1000 },
+        "2": { "cost": { "WOOD": 300, "IRON": 30, "COIN": 280 }, "capacity_bonus": 25, "effect_bp": 1200 },
+        "3": { "cost": { "WOOD": 700, "IRON": 80, "COIN": 700 }, "capacity_bonus": 60, "effect_bp": 1450 },
+        "4": { "cost": { "WOOD": 1500, "IRON": 200, "COIN": 1700 }, "capacity_bonus": 130, "effect_bp": 1750 },
+        "5": { "cost": { "WOOD": 3200, "IRON": 500, "COIN": 4200 }, "capacity_bonus": 300, "effect_bp": 2100 }
+      }
+    },
+    "WATCHTOWER_WALL": {
+      "name_ko": "망루/성벽",
+      "levels": {
+        "1": { "cost": { "WOOD": 150, "IRON": 40, "COIN": 50 }, "capacity_bonus": 100, "effect_bp": 1000 },
+        "2": { "cost": { "WOOD": 380, "IRON": 110, "COIN": 150 }, "capacity_bonus": 250, "effect_bp": 1200 },
+        "3": { "cost": { "WOOD": 850, "IRON": 280, "COIN": 400 }, "capacity_bonus": 600, "effect_bp": 1450 },
+        "4": { "cost": { "WOOD": 1800, "IRON": 700, "COIN": 1000 }, "capacity_bonus": 1400, "effect_bp": 1750 },
+        "5": { "cost": { "WOOD": 3800, "IRON": 1600, "COIN": 2500 }, "capacity_bonus": 3000, "effect_bp": 2100 }
+      }
+    }
+  },
+  "crafting_recipes": [
+    {
+      "id": "RECIPE_DAO_SWORD",
+      "name_ko": "제련 환도",
+      "output_item": "WEAPONS",
+      "output_count": 2,
+      "work_units": 100,
+      "inputs": { "IRON": 15, "WOOD": 5, "COIN": 20 }
+    },
+    {
+      "id": "RECIPE_IRON_ARMOR",
+      "name_ko": "철제 경갑",
+      "output_item": "WEAPONS",
+      "output_count": 1,
+      "work_units": 150,
+      "inputs": { "IRON": 25, "WOOD": 10, "COIN": 40 }
+    },
+    {
+      "id": "RECIPE_CROSSBOW",
+      "name_ko": "연노(쇠뇌)",
+      "output_item": "WEAPONS",
+      "output_count": 1,
+      "work_units": 200,
+      "inputs": { "IRON": 20, "WOOD": 30, "COIN": 50 }
+    },
+    {
+      "id": "RECIPE_HERBAL_WINE",
+      "name_ko": "구창명약/두강주",
+      "output_item": "HERBS_WINE",
+      "output_count": 3,
+      "work_units": 80,
+      "inputs": { "GRAIN": 40, "COIN": 15 }
+    },
+    {
+      "id": "RECIPE_WAR_HORSE_TACK",
+      "name_ko": "정예 군마 안장",
+      "output_item": "HORSES",
+      "output_count": 1,
+      "work_units": 120,
+      "inputs": { "WOOD": 20, "IRON": 10, "COIN": 80 }
+    }
+  ],
+  "research_tree": {
+    "AGRICULTURE_DOMESTIC": [
+      {
+        "id": "TECH_IRON_PLOW",
+        "name_ko": "우경 및 철제 농기구",
+        "prerequisites": [],
+        "cost": { "WOOD": 200, "COIN": 150 },
+        "work_units": 300,
+        "modifiers": { "farmland_yield_bp": 1250, "grain_storage_bp": 1100 }
+      },
+      {
+        "id": "TECH_WATER_WHEEL",
+        "name_ko": "수리시설 및 수차",
+        "prerequisites": ["TECH_IRON_PLOW"],
+        "cost": { "WOOD": 500, "COIN": 400, "IRON": 50 },
+        "work_units": 600,
+        "modifiers": { "farmland_yield_bp": 1500, "work_speed_bp": 1100 }
+      },
+      {
+        "id": "TECH_EXCHANGE_MARKET",
+        "name_ko": "순환 상단 및 물자 표준화",
+        "prerequisites": ["TECH_WATER_WHEEL"],
+        "cost": { "WOOD": 1000, "COIN": 1200, "IRON": 150 },
+        "work_units": 1000,
+        "modifiers": { "market_tax_bp": 1200, "coin_income_bp": 1300 }
+      }
+    ],
+    "FORMATIONS_TROOPS": [
+      {
+        "id": "TECH_MILITIA_DRILL",
+        "name_ko": "향병 기초 제식 훈련",
+        "prerequisites": [],
+        "cost": { "WOOD": 150, "COIN": 200 },
+        "work_units": 300,
+        "modifiers": { "troop_morale_bp": 1100, "drill_speed_bp": 1200 }
+      },
+      {
+        "id": "TECH_CAV_TACTICS",
+        "name_ko": "경기병 기동 돌격술",
+        "prerequisites": ["TECH_MILITIA_DRILL"],
+        "cost": { "WOOD": 400, "COIN": 600, "IRON": 100 },
+        "work_units": 650,
+        "modifiers": { "cavalry_power_bp": 1300, "movement_speed_bp": 1150 }
+      },
+      {
+        "id": "TECH_EIGHT_DIAGRAMS",
+        "name_ko": "팔괘진 및 제병협동",
+        "prerequisites": ["TECH_CAV_TACTICS"],
+        "cost": { "WOOD": 900, "COIN": 1500, "IRON": 300 },
+        "work_units": 1100,
+        "modifiers": { "army_defense_bp": 1400, "tactical_advantage_bp": 1350 }
+      }
+    ],
+    "STRATAGEMS_SIEGE": [
+      {
+        "id": "TECH_SCOUT_NETWORK",
+        "name_ko": "봉화 및 척후망 구축",
+        "prerequisites": [],
+        "cost": { "WOOD": 250, "COIN": 150 },
+        "work_units": 300,
+        "modifiers": { "intel_range_bp": 1300, "ambush_defense_bp": 1200 }
+      },
+      {
+        "id": "TECH_SIEGE_ENGINEERING",
+        "name_ko": "충차 및 투석기 축성",
+        "prerequisites": ["TECH_SCOUT_NETWORK"],
+        "cost": { "WOOD": 600, "IRON": 300, "COIN": 500 },
+        "work_units": 700,
+        "modifiers": { "siege_attack_bp": 1400, "wall_damage_bp": 1350 }
+      },
+      {
+        "id": "TECH_STRATAGEM_FIRE",
+        "name_ko": "화공 및 심리 교란책",
+        "prerequisites": ["TECH_SIEGE_ENGINEERING"],
+        "cost": { "WOOD": 1200, "IRON": 600, "COIN": 2000 },
+        "work_units": 1200,
+        "modifiers": { "stratagem_success_bp": 1500, "enemy_morale_penalty_bp": 1400 }
+      }
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+# Godot 4 generated cache
+.godot/
+
+# Runtime saves, WAL logs, SQLite databases & test reports
+saves/
+reports/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.jsonl
+*.tmp
+
+# Python caches
+**/__pycache__/
+*.py[cod]
+
+# OS / editor artifacts
+.DS_Store
+Thumbs.db
+*~

@@ -1,0 +1,653 @@
+{
+  "nodes": [
+    {
+      "node_id": "luoyang",
+      "name_ko": "낙양",
+      "province": "옹양주",
+      "node_tier": "CAPITAL",
+      "is_starter_county": false,
+      "x": 500,
+      "y": 500,
+      "fortification_hp": 10000,
+      "max_fortification_hp": 10000,
+      "security_bp": 9000,
+      "bandit_pressure_bp": 100,
+      "tax_rate_bp": 1500,
+      "base_grain_price_bp": 1000,
+      "base_iron_price_bp": 2000,
+      "amm_reserves": {
+        "grain": 50000,
+        "iron": 10000,
+        "wood": 15000,
+        "stone": 20000,
+        "horse": 5000,
+        "silk": 8000
+      }
+    },
+    {
+      "node_id": "changan",
+      "name_ko": "장안",
+      "province": "옹양주",
+      "node_tier": "CAPITAL",
+      "is_starter_county": false,
+      "x": 250,
+      "y": 480,
+      "fortification_hp": 9000,
+      "max_fortification_hp": 9000,
+      "security_bp": 8500,
+      "bandit_pressure_bp": 150,
+      "tax_rate_bp": 1500,
+      "base_grain_price_bp": 1050,
+      "base_iron_price_bp": 1950,
+      "amm_reserves": {
+        "grain": 45000,
+        "iron": 9000,
+        "wood": 12000,
+        "stone": 18000,
+        "horse": 6000,
+        "silk": 6000
+      }
+    },
+    {
+      "node_id": "xuchang",
+      "name_ko": "허창",
+      "province": "연주",
+      "node_tier": "CITY",
+      "is_starter_county": false,
+      "x": 580,
+      "y": 580,
+      "fortification_hp": 7500,
+      "max_fortification_hp": 7500,
+      "security_bp": 8000,
+      "bandit_pressure_bp": 200,
+      "tax_rate_bp": 1200,
+      "base_grain_price_bp": 1000,
+      "base_iron_price_bp": 2100,
+      "amm_reserves": {
+        "grain": 30000,
+        "iron": 6000,
+        "wood": 8000,
+        "stone": 10000,
+        "horse": 2000,
+        "silk": 4000
+      }
+    },
+    {
+      "node_id": "ye_city",
+      "name_ko": "업성",
+      "province": "기주",
+      "node_tier": "CITY",
+      "is_starter_county": false,
+      "x": 550,
+      "y": 320,
+      "fortification_hp": 8000,
+      "max_fortification_hp": 8000,
+      "security_bp": 8200,
+      "bandit_pressure_bp": 180,
+      "tax_rate_bp": 1300,
+      "base_grain_price_bp": 950,
+      "base_iron_price_bp": 2200,
+      "amm_reserves": {
+        "grain": 35000,
+        "iron": 8000,
+        "wood": 10000,
+        "stone": 12000,
+        "horse": 3000,
+        "silk": 5000
+      }
+    },
+    {
+      "node_id": "ye_county",
+      "name_ko": "업현",
+      "province": "기주",
+      "node_tier": "COUNTY",
+      "is_starter_county": true,
+      "x": 540,
+      "y": 300,
+      "fortification_hp": 3000,
+      "max_fortification_hp": 3000,
+      "security_bp": 7000,
+      "bandit_pressure_bp": 300,
+      "tax_rate_bp": 1000,
+      "base_grain_price_bp": 900,
+      "base_iron_price_bp": 2000,
+      "amm_reserves": {
+        "grain": 10000,
+        "iron": 2000,
+        "wood": 4000,
+        "stone": 3000,
+        "horse": 1000,
+        "silk": 1000
+      }
+    },
+    {
+      "node_id": "jicheng",
+      "name_ko": "계성",
+      "province": "유주",
+      "node_tier": "COUNTY",
+      "is_starter_county": true,
+      "x": 600,
+      "y": 150,
+      "fortification_hp": 3500,
+      "max_fortification_hp": 3500,
+      "security_bp": 6800,
+      "bandit_pressure_bp": 400,
+      "tax_rate_bp": 1000,
+      "base_grain_price_bp": 1100,
+      "base_iron_price_bp": 2300,
+      "amm_reserves": {
+        "grain": 12000,
+        "iron": 3000,
+        "wood": 5000,
+        "stone": 4000,
+        "horse": 2500,
+        "silk": 1500
+      }
+    },
+    {
+      "node_id": "chenliu",
+      "name_ko": "진류",
+      "province": "연주",
+      "node_tier": "COUNTY",
+      "is_starter_county": true,
+      "x": 620,
+      "y": 530,
+      "fortification_hp": 3200,
+      "max_fortification_hp": 3200,
+      "security_bp": 7200,
+      "bandit_pressure_bp": 250,
+      "tax_rate_bp": 1000,
+      "base_grain_price_bp": 1000,
+      "base_iron_price_bp": 2050,
+      "amm_reserves": {
+        "grain": 11000,
+        "iron": 2500,
+        "wood": 4500,
+        "stone": 3500,
+        "horse": 1200,
+        "silk": 1200
+      }
+    },
+    {
+      "node_id": "runan",
+      "name_ko": "여남",
+      "province": "예주",
+      "node_tier": "COUNTY",
+      "is_starter_county": true,
+      "x": 600,
+      "y": 680,
+      "fortification_hp": 3000,
+      "max_fortification_hp": 3000,
+      "security_bp": 6500,
+      "bandit_pressure_bp": 450,
+      "tax_rate_bp": 1000,
+      "base_grain_price_bp": 950,
+      "base_iron_price_bp": 1900,
+      "amm_reserves": {
+        "grain": 10500,
+        "iron": 2000,
+        "wood": 4000,
+        "stone": 3000,
+        "horse": 800,
+        "silk": 1000
+      }
+    },
+    {
+      "node_id": "nanyang",
+      "name_ko": "남양",
+      "province": "형주",
+      "node_tier": "COUNTY",
+      "is_starter_county": true,
+      "x": 450,
+      "y": 680,
+      "fortification_hp": 3300,
+      "max_fortification_hp": 3300,
+      "security_bp": 7000,
+      "bandit_pressure_bp": 300,
+      "tax_rate_bp": 1000,
+      "base_grain_price_bp": 900,
+      "base_iron_price_bp": 2000,
+      "amm_reserves": {
+        "grain": 13000,
+        "iron": 2200,
+        "wood": 4500,
+        "stone": 3200,
+        "horse": 1000,
+        "silk": 1500
+      }
+    },
+    {
+      "node_id": "hulao_pass",
+      "name_ko": "호로관",
+      "province": "옹양주",
+      "node_tier": "PASS",
+      "is_starter_county": false,
+      "x": 520,
+      "y": 520,
+      "fortification_hp": 15000,
+      "max_fortification_hp": 15000,
+      "security_bp": 9500,
+      "bandit_pressure_bp": 50,
+      "tax_rate_bp": 800,
+      "base_grain_price_bp": 1200,
+      "base_iron_price_bp": 2500,
+      "amm_reserves": {
+        "grain": 20000,
+        "iron": 5000,
+        "wood": 5000,
+        "stone": 10000,
+        "horse": 1000,
+        "silk": 1000
+      }
+    },
+    {
+      "node_id": "tong_pass",
+      "name_ko": "동관",
+      "province": "옹양주",
+      "node_tier": "PASS",
+      "is_starter_county": false,
+      "x": 350,
+      "y": 480,
+      "fortification_hp": 14000,
+      "max_fortification_hp": 14000,
+      "security_bp": 9500,
+      "bandit_pressure_bp": 60,
+      "tax_rate_bp": 800,
+      "base_grain_price_bp": 1200,
+      "base_iron_price_bp": 2500,
+      "amm_reserves": {
+        "grain": 18000,
+        "iron": 4500,
+        "wood": 4500,
+        "stone": 9000,
+        "horse": 1200,
+        "silk": 800
+      }
+    },
+    {
+      "node_id": "xiangyang",
+      "name_ko": "양양",
+      "province": "형주",
+      "node_tier": "CITY",
+      "is_starter_county": false,
+      "x": 420,
+      "y": 780,
+      "fortification_hp": 8500,
+      "max_fortification_hp": 8500,
+      "security_bp": 8100,
+      "bandit_pressure_bp": 150,
+      "tax_rate_bp": 1200,
+      "base_grain_price_bp": 850,
+      "base_iron_price_bp": 2100,
+      "amm_reserves": {
+        "grain": 40000,
+        "iron": 7000,
+        "wood": 12000,
+        "stone": 10000,
+        "horse": 2000,
+        "silk": 6000
+      }
+    },
+    {
+      "node_id": "chengdu",
+      "name_ko": "성도",
+      "province": "익주",
+      "node_tier": "CITY",
+      "is_starter_county": false,
+      "x": 100,
+      "y": 800,
+      "fortification_hp": 9500,
+      "max_fortification_hp": 9500,
+      "security_bp": 8800,
+      "bandit_pressure_bp": 100,
+      "tax_rate_bp": 1400,
+      "base_grain_price_bp": 800,
+      "base_iron_price_bp": 2400,
+      "amm_reserves": {
+        "grain": 60000,
+        "iron": 12000,
+        "wood": 20000,
+        "stone": 15000,
+        "horse": 4000,
+        "silk": 10000
+      }
+    },
+    {
+      "node_id": "jianye",
+      "name_ko": "건업",
+      "province": "양주",
+      "node_tier": "CITY",
+      "is_starter_county": false,
+      "x": 800,
+      "y": 750,
+      "fortification_hp": 9000,
+      "max_fortification_hp": 9000,
+      "security_bp": 8500,
+      "bandit_pressure_bp": 120,
+      "tax_rate_bp": 1300,
+      "base_grain_price_bp": 900,
+      "base_iron_price_bp": 2200,
+      "amm_reserves": {
+        "grain": 50000,
+        "iron": 9000,
+        "wood": 18000,
+        "stone": 12000,
+        "horse": 2500,
+        "silk": 12000
+      }
+    },
+    {
+      "node_id": "xiapi",
+      "name_ko": "하비",
+      "province": "서주",
+      "node_tier": "CITY",
+      "is_starter_county": false,
+      "x": 750,
+      "y": 520,
+      "fortification_hp": 7800,
+      "max_fortification_hp": 7800,
+      "security_bp": 7900,
+      "bandit_pressure_bp": 220,
+      "tax_rate_bp": 1100,
+      "base_grain_price_bp": 950,
+      "base_iron_price_bp": 2050,
+      "amm_reserves": {
+        "grain": 32000,
+        "iron": 6500,
+        "wood": 9000,
+        "stone": 8000,
+        "horse": 1800,
+        "silk": 7000
+      }
+    }
+  ],
+  "edges": [
+    {
+      "edge_id": "e_luoyang_changan",
+      "from_node": "luoyang",
+      "to_node": "changan",
+      "terrain_type": "HIGHWAY",
+      "travel_macro_ticks": 3,
+      "ambush_risk_bp": 150,
+      "supply_drain_pm": 100
+    },
+    {
+      "edge_id": "e_luoyang_hulao",
+      "from_node": "luoyang",
+      "to_node": "hulao_pass",
+      "terrain_type": "HIGHWAY",
+      "travel_macro_ticks": 1,
+      "ambush_risk_bp": 50,
+      "supply_drain_pm": 50
+    },
+    {
+      "edge_id": "e_hulao_xuchang",
+      "from_node": "hulao_pass",
+      "to_node": "xuchang",
+      "terrain_type": "HIGHWAY",
+      "travel_macro_ticks": 2,
+      "ambush_risk_bp": 100,
+      "supply_drain_pm": 80
+    },
+    {
+      "edge_id": "e_changan_tong",
+      "from_node": "changan",
+      "to_node": "tong_pass",
+      "terrain_type": "MOUNTAIN_PATH",
+      "travel_macro_ticks": 2,
+      "ambush_risk_bp": 200,
+      "supply_drain_pm": 150
+    },
+    {
+      "edge_id": "e_tong_luoyang",
+      "from_node": "tong_pass",
+      "to_node": "luoyang",
+      "terrain_type": "HIGHWAY",
+      "travel_macro_ticks": 2,
+      "ambush_risk_bp": 120,
+      "supply_drain_pm": 90
+    },
+    {
+      "edge_id": "e_xuchang_chenliu",
+      "from_node": "xuchang",
+      "to_node": "chenliu",
+      "terrain_type": "HIGHWAY",
+      "travel_macro_ticks": 1,
+      "ambush_risk_bp": 100,
+      "supply_drain_pm": 70
+    },
+    {
+      "edge_id": "e_chenliu_ye_city",
+      "from_node": "chenliu",
+      "to_node": "ye_city",
+      "terrain_type": "HIGHWAY",
+      "travel_macro_ticks": 2,
+      "ambush_risk_bp": 130,
+      "supply_drain_pm": 90
+    },
+    {
+      "edge_id": "e_ye_city_ye_county",
+      "from_node": "ye_city",
+      "to_node": "ye_county",
+      "terrain_type": "HIGHWAY",
+      "travel_macro_ticks": 1,
+      "ambush_risk_bp": 80,
+      "supply_drain_pm": 50
+    },
+    {
+      "edge_id": "e_ye_city_jicheng",
+      "from_node": "ye_city",
+      "to_node": "jicheng",
+      "terrain_type": "HIGHWAY",
+      "travel_macro_ticks": 4,
+      "ambush_risk_bp": 250,
+      "supply_drain_pm": 180
+    },
+    {
+      "edge_id": "e_xuchang_runan",
+      "from_node": "xuchang",
+      "to_node": "runan",
+      "terrain_type": "HIGHWAY",
+      "travel_macro_ticks": 2,
+      "ambush_risk_bp": 180,
+      "supply_drain_pm": 100
+    },
+    {
+      "edge_id": "e_runan_nanyang",
+      "from_node": "runan",
+      "to_node": "nanyang",
+      "terrain_type": "MOUNTAIN_PATH",
+      "travel_macro_ticks": 2,
+      "ambush_risk_bp": 220,
+      "supply_drain_pm": 160
+    },
+    {
+      "edge_id": "e_nanyang_xiangyang",
+      "from_node": "nanyang",
+      "to_node": "xiangyang",
+      "terrain_type": "WATERWAY",
+      "travel_macro_ticks": 2,
+      "ambush_risk_bp": 100,
+      "supply_drain_pm": 80
+    },
+    {
+      "edge_id": "e_xiangyang_chengdu",
+      "from_node": "xiangyang",
+      "to_node": "chengdu",
+      "terrain_type": "MOUNTAIN_PATH",
+      "travel_macro_ticks": 5,
+      "ambush_risk_bp": 300,
+      "supply_drain_pm": 250
+    },
+    {
+      "edge_id": "e_changan_chengdu",
+      "from_node": "changan",
+      "to_node": "chengdu",
+      "terrain_type": "MOUNTAIN_PATH",
+      "travel_macro_ticks": 6,
+      "ambush_risk_bp": 350,
+      "supply_drain_pm": 280
+    },
+    {
+      "edge_id": "e_xuchang_xiapi",
+      "from_node": "xuchang",
+      "to_node": "xiapi",
+      "terrain_type": "HIGHWAY",
+      "travel_macro_ticks": 3,
+      "ambush_risk_bp": 170,
+      "supply_drain_pm": 120
+    },
+    {
+      "edge_id": "e_xiapi_jianye",
+      "from_node": "xiapi",
+      "to_node": "jianye",
+      "terrain_type": "WATERWAY",
+      "travel_macro_ticks": 3,
+      "ambush_risk_bp": 140,
+      "supply_drain_pm": 90
+    },
+    {
+      "edge_id": "e_jianye_xiangyang",
+      "from_node": "jianye",
+      "to_node": "xiangyang",
+      "terrain_type": "WATERWAY",
+      "travel_macro_ticks": 4,
+      "ambush_risk_bp": 160,
+      "supply_drain_pm": 110
+    },
+    {
+      "edge_id": "e_luoyang_xuchang",
+      "from_node": "luoyang",
+      "to_node": "xuchang",
+      "terrain_type": "HIGHWAY",
+      "travel_macro_ticks": 2,
+      "ambush_risk_bp": 90,
+      "supply_drain_pm": 70
+    },
+    {
+      "edge_id": "e_chenliu_xiapi",
+      "from_node": "chenliu",
+      "to_node": "xiapi",
+      "terrain_type": "HIGHWAY",
+      "travel_macro_ticks": 2,
+      "ambush_risk_bp": 150,
+      "supply_drain_pm": 100
+    },
+    {
+      "edge_id": "e_runan_xiangyang",
+      "from_node": "runan",
+      "to_node": "xiangyang",
+      "terrain_type": "HIGHWAY",
+      "travel_macro_ticks": 3,
+      "ambush_risk_bp": 190,
+      "supply_drain_pm": 130
+    },
+    {
+      "edge_id": "e_jicheng_ye_city",
+      "from_node": "jicheng",
+      "to_node": "ye_city",
+      "terrain_type": "HIGHWAY",
+      "travel_macro_ticks": 4,
+      "ambush_risk_bp": 250,
+      "supply_drain_pm": 180
+    },
+    {
+      "edge_id": "e_changan_luoyang",
+      "from_node": "changan",
+      "to_node": "luoyang",
+      "terrain_type": "HIGHWAY",
+      "travel_macro_ticks": 3,
+      "ambush_risk_bp": 150,
+      "supply_drain_pm": 100
+    }
+  ],
+  "unit_types": [
+    {
+      "unit_type_id": "SPEAR_SHIELD",
+      "name_ko": "창방병",
+      "tier": 1,
+      "promotion_requirements": {
+        "iron": 100,
+        "wood": 50
+      },
+      "atk_pm": 1000,
+      "def_pm": 1300,
+      "speed_pm": 900,
+      "siege_pm": 800,
+      "grain_upkeep_pm": 100
+    },
+    {
+      "unit_type_id": "LONGBOW",
+      "name_ko": "강궁병",
+      "tier": 1,
+      "promotion_requirements": {
+        "iron": 120,
+        "wood": 150
+      },
+      "atk_pm": 1300,
+      "def_pm": 800,
+      "speed_pm": 950,
+      "siege_pm": 900,
+      "grain_upkeep_pm": 110
+    },
+    {
+      "unit_type_id": "REPEATING_CROSSBOW",
+      "name_ko": "연노병",
+      "tier": 2,
+      "promotion_requirements": {
+        "iron": 250,
+        "wood": 200,
+        "silk": 50
+      },
+      "atk_pm": 1500,
+      "def_pm": 900,
+      "speed_pm": 1000,
+      "siege_pm": 1000,
+      "grain_upkeep_pm": 130
+    },
+    {
+      "unit_type_id": "LIGHT_CAVALRY",
+      "name_ko": "경기병",
+      "tier": 1,
+      "promotion_requirements": {
+        "iron": 150,
+        "horse": 100
+      },
+      "atk_pm": 1200,
+      "def_pm": 950,
+      "speed_pm": 1500,
+      "siege_pm": 700,
+      "grain_upkeep_pm": 150
+    },
+    {
+      "unit_type_id": "HEAVY_CATAPHRACT",
+      "name_ko": "중철갑기병",
+      "tier": 2,
+      "promotion_requirements": {
+        "iron": 400,
+        "horse": 200,
+        "silk": 100
+      },
+      "atk_pm": 1800,
+      "def_pm": 1700,
+      "speed_pm": 1300,
+      "siege_pm": 1200,
+      "grain_upkeep_pm": 220
+    },
+    {
+      "unit_type_id": "SIEGE_ENGINE",
+      "name_ko": "공성병기",
+      "tier": 2,
+      "promotion_requirements": {
+        "iron": 500,
+        "wood": 600,
+        "stone": 400
+      },
+      "atk_pm": 800,
+      "def_pm": 700,
+      "speed_pm": 500,
+      "siege_pm": 2500,
+      "grain_upkeep_pm": 200
+    }
+  ]
+}

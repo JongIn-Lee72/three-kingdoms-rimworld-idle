@@ -1,0 +1,130 @@
+{
+  "schema_version": "AI_PERSONA_TOKEN_V2",
+  "token_prefix": "TK3K2",
+  "alphabet_31": "0123456789ABCDEFGHJKMNPQRSTVWXY",
+  "max_raw_input_bytes": 4096,
+  "token_regex": "^TK3K2-([0-9A-HJKMNP-TV-XY]{6})-([0-9A-HJKMNP-TV-XY]{6})-([0-9A-HJKMNP-TV-XY]{6})-([0-9A-HJKMNP-TV-XY]{4})-([0-9A-HJKMNP-TV-XY]{2})$",
+  "envelope_tags": {
+    "persona_open": "<<<TK3K_PERSONA_V2>>>",
+    "persona_close": "<<<END_TK3K_PERSONA_V2>>>",
+    "lore_open": "<<<TK3K_LORE_V2>>>",
+    "lore_close": "<<<END_TK3K_LORE_V2>>>"
+  },
+  "challenge_policy": {
+    "ttl_ticks": 900,
+    "max_attempts": 3,
+    "tamper_cooldown_tiers": [300, 900, 3600],
+    "r3_cooldown_ticks": 1800,
+    "rate_limit_15m_ticks": 900,
+    "rate_limit_15m_max": 3,
+    "rate_limit_24h_ticks": 86400,
+    "rate_limit_24h_max": 5
+  },
+  "stat_budget": {
+    "total_budget": 320,
+    "min_stat": 35,
+    "max_stat": 85,
+    "variable_budget": 145,
+    "passion_budget": 3,
+    "raw_weight_base": 20,
+    "raw_weight_step": 3,
+    "origin_post_bonus_cap": 95,
+    "stat_keys": ["LEA", "MAR", "INT", "POL", "CHA"]
+  },
+  "traits": [
+    { "index": 0, "id": "T_CHIVALROUS", "polarity": "LIGHT", "cost": 1 },
+    { "index": 1, "id": "T_AMBITIOUS", "polarity": "SHADOW", "cost": -1 },
+    { "index": 2, "id": "T_CAUTIOUS", "polarity": "SHADOW", "cost": -1 },
+    { "index": 3, "id": "T_DRINKER", "polarity": "SHADOW", "cost": -1 },
+    { "index": 4, "id": "T_MYSTIC", "polarity": "LIGHT", "cost": 1 },
+    { "index": 5, "id": "T_UNSELFISH", "polarity": "LIGHT", "cost": 1 },
+    { "index": 6, "id": "T_GREEDY", "polarity": "SHADOW", "cost": -1 },
+    { "index": 7, "id": "T_FIERCE", "polarity": "SHADOW", "cost": -1 },
+    { "index": 8, "id": "T_AGRARIAN", "polarity": "LIGHT", "cost": 1 },
+    { "index": 9, "id": "T_SCHOLAR", "polarity": "LIGHT", "cost": 1 }
+  ],
+  "light_pool": [0, 4, 5, 8, 9],
+  "shadow_pool": [1, 2, 3, 6, 7],
+  "net_trait_cost_range": [-1, 1],
+  "min_shadow_traits": 1,
+  "slot_domains": {
+    "ai_src": {
+      "min": 0,
+      "max": 6,
+      "labels": ["UNKNOWN", "CHATGPT", "CLAUDE", "GEMINI", "LOCAL_LLM", "GEMINI_API_H2", "OTHER"]
+    },
+    "origin_hint": {
+      "min": 0,
+      "max": 4,
+      "labels": [
+        "ORIGIN_FALLEN_ROYAL",
+        "ORIGIN_FRONTIER_OFFICER",
+        "ORIGIN_PURE_SCHOLAR",
+        "ORIGIN_CHIVALROUS_HERO",
+        "ORIGIN_AGRARIAN_GENTRY"
+      ]
+    },
+    "rhythm_code": {
+      "min": 0,
+      "max": 3,
+      "labels": ["EARLY_DISCIPLINE", "NIGHT_OWL", "MARTIAL_DRILL", "SOCIAL_BANQUET"]
+    },
+    "stance_code": {
+      "min": 0,
+      "max": 3,
+      "labels": ["AGGRESSIVE", "CALCULATED", "DEFENSIVE_HOLD", "DIPLOMATIC_EVADE"]
+    },
+    "risk_flags": {
+      "min": 0,
+      "max": 3,
+      "labels": ["R0_CLEAN", "R1_MILD_STEERING", "R2_STAT_COERCION", "R3_PROMPT_INJECTION"]
+    }
+  },
+  "anomaly_heuristics": {
+    "H1_flat_ceiling": {
+      "min_uniform_q": 28,
+      "beta_ai_cap_bp": 2000,
+      "forced_mode_if_direct": "FUSION_INTERVIEW"
+    },
+    "H2_extreme_bimodal": {
+      "high_threshold_q": 27,
+      "high_min_count": 2,
+      "low_threshold_q": 4,
+      "low_min_count": 2,
+      "beta_ai_cap_bp": 4000,
+      "compress_weight_permille": 850,
+      "compress_mean_permille": 150,
+      "forced_mode_if_direct": "FUSION_INTERVIEW"
+    },
+    "H3_trait_symmetry": {
+      "require_shadow_count_min": 1,
+      "net_cost_min": -1,
+      "net_cost_max": 1,
+      "none_sentinel": 10
+    },
+    "H4_lore_sanitization": {
+      "bonus_resources_granted": 0,
+      "opening_thought_duration_ticks": 72,
+      "opening_thought_mood_abs_max": 5,
+      "lore_limits": {
+        "courtesy_name": 12,
+        "epithet": 16,
+        "modern_background_tag": 20,
+        "motto": 40,
+        "backstory_hook": 140
+      }
+    }
+  },
+  "error_codes": [
+    "ERR_PLAINTEXT_JSON_FORBIDDEN",
+    "ERR_TOKEN_FORMAT",
+    "ERR_TOKEN_TAMPERED",
+    "ERR_TOKEN_DOMAIN",
+    "ERR_CHALLENGE_UNKNOWN",
+    "ERR_CHALLENGE_OWNERSHIP",
+    "ERR_CHALLENGE_EXPIRED",
+    "ERR_CHALLENGE_REPLAYED",
+    "ERR_CHALLENGE_COOLDOWN",
+    "ERR_COERCION_REJECTED"
+  ]
+}

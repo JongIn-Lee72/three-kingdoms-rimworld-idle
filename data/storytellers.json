@@ -1,0 +1,133 @@
+{
+  "storytellers": [
+    {
+      "storyteller_id": "ST_SIMA_QIAN",
+      "name_ko": "사마천",
+      "description": "균형 잡힌 역사적 긴장감과 공정한 시련을 선사하는 태사공.",
+      "personality": "BALANCED",
+      "threat_mult_pm": 1000,
+      "cadence_days": 7
+    },
+    {
+      "storyteller_id": "ST_DONG_ZHUO",
+      "name_ko": "동탁",
+      "description": "혼란스럽고 극단적인 변동성과 가혹한 위협을 몰아치는 폭군.",
+      "personality": "CHAOTIC",
+      "threat_mult_pm": 1350,
+      "cadence_days": 4
+    },
+    {
+      "storyteller_id": "ST_WEN_JING",
+      "name_ko": "문경지치",
+      "description": "평화로운 내정과 백성의 안정을 도모하는 온화한 치세.",
+      "personality": "PEACEFUL",
+      "threat_mult_pm": 700,
+      "cadence_days": 12
+    }
+  ],
+  "adaptation_bounds": {
+    "min_bp": 400,
+    "max_bp": 1500,
+    "default_bp": 1000,
+    "defeat_drop_bp": 250,
+    "victory_gain_bp": 100
+  },
+  "event_catalog": [
+    {
+      "event_id": "EV_YELLOW_TURBAN_RAID",
+      "name_ko": "황건적의 봉기",
+      "category": "THREAT",
+      "min_threat_score": 200,
+      "weight": 100,
+      "payload_modifiers": {
+        "bandit_pressure_delta_bp": 300,
+        "security_delta_bp": -200,
+        "grain_damage_pm": 150
+      }
+    },
+    {
+      "event_id": "EV_BANDIT_AMBUSH",
+      "name_ko": "산적 습격",
+      "category": "THREAT",
+      "min_threat_score": 100,
+      "weight": 120,
+      "payload_modifiers": {
+        "ambush_risk_delta_bp": 250,
+        "travel_delay_ticks": 1,
+        "gold_loss_pm": 100
+      }
+    },
+    {
+      "event_id": "EV_FAMINE_LOCUSTS",
+      "name_ko": "메뚜기 떼와 흉년",
+      "category": "THREAT",
+      "min_threat_score": 300,
+      "weight": 80,
+      "payload_modifiers": {
+        "grain_price_delta_bp": 400,
+        "grain_production_delta_pm": -350,
+        "refugee_spawn_count": 2
+      }
+    },
+    {
+      "event_id": "EV_WANDERING_TALENT",
+      "name_ko": "방랑 인재 출현",
+      "category": "OPPORTUNITY",
+      "min_threat_score": 0,
+      "weight": 150,
+      "payload_modifiers": {
+        "recruit_cost_discount_pm": 200,
+        "talent_stat_bonus": 10,
+        "loyalty_boost": 15
+      }
+    },
+    {
+      "event_id": "EV_BUMPER_HARVEST",
+      "name_ko": "풍년",
+      "category": "OPPORTUNITY",
+      "min_threat_score": 0,
+      "weight": 140,
+      "payload_modifiers": {
+        "grain_production_delta_pm": 400,
+        "grain_price_delta_bp": -250,
+        "tax_yield_delta_pm": 200
+      }
+    },
+    {
+      "event_id": "EV_IMPERIAL_EDICT",
+      "name_ko": "황실 칙령 하달",
+      "category": "WORLD",
+      "min_threat_score": 150,
+      "weight": 90,
+      "payload_modifiers": {
+        "prestige_gain": 50,
+        "tax_rate_cap_delta_bp": 100,
+        "mandate_points": 10
+      }
+    },
+    {
+      "event_id": "EV_MERCHANT_CARAVAN",
+      "name_ko": "대상인 방문",
+      "category": "OPPORTUNITY",
+      "min_threat_score": 0,
+      "weight": 130,
+      "payload_modifiers": {
+        "commodity_price_discount_pm": 150,
+        "max_trade_volume_multiplier_pm": 1500,
+        "silk_supply_bonus": 500
+      }
+    },
+    {
+      "event_id": "EV_PLAGUE_OUTBREAK",
+      "name_ko": "역병 창궐",
+      "category": "THREAT",
+      "min_threat_score": 400,
+      "weight": 60,
+      "payload_modifiers": {
+        "population_loss_pm": 200,
+        "security_delta_bp": -300,
+        "medicine_cost_delta_bp": 500
+      }
+    }
+  ]
+}

@@ -1,0 +1,521 @@
+{
+  "schema_version": "M2_INTERVIEW_QUESTIONS_V1",
+  "questions": [
+    {
+      "id": "Q1",
+      "scene_title": "난세 낙하: 낯선 객잔에서 눈을 떴을 때",
+      "prompt": "정신을 차려보니 북적이는 객잔의 삐걱거리는 나무 침상 위다. 천하가 난세에 접어들었다는 소문이 자욱하다. 가장 먼저 무엇을 행하겠는가?",
+      "fusion_eligible": true,
+      "choices": {
+        "A": {
+          "text": "품속 지도를 펼쳐 주변 산세와 주요 보급로를 파악한다.",
+          "stat_weights": { "LEA": 3, "MAR": 1, "INT": 2, "POL": 2, "CHA": 1 },
+          "passion_votes": ["LEA", "INT"],
+          "trait_scores": { "T_CAUTIOUS": 1 },
+          "origin_affinity": "ORIGIN_FRONTIER_OFFICER",
+          "schedule_archetype": "EARLY_DISCIPLINE",
+          "doctrine_preset": "CONSERVATIVE",
+          "opening_thought_id": "THOUGHT_STRATEGIC_SURVEY"
+        },
+        "B": {
+          "text": "문밖의 소란에 즉시 검자루를 잡고 밖으로 뛰어 나간다.",
+          "stat_weights": { "LEA": 2, "MAR": 4, "INT": 0, "POL": 0, "CHA": 3 },
+          "passion_votes": ["MAR"],
+          "trait_scores": { "T_FIERCE": 1, "T_CHIVALROUS": 1 },
+          "origin_affinity": "ORIGIN_CHIVALROUS_HERO",
+          "schedule_archetype": "MARTIAL_DRILL",
+          "doctrine_preset": "AGGRESSIVE",
+          "opening_thought_id": "THOUGHT_MARTIAL_IMPULSE"
+        },
+        "C": {
+          "text": "객잔 주인과 차를 나누며 최근의 물가와 민심, 군세 동향을 넌지시 묻는다.",
+          "stat_weights": { "LEA": 1, "MAR": 0, "INT": 3, "POL": 3, "CHA": 2 },
+          "passion_votes": ["INT", "POL"],
+          "trait_scores": { "T_SCHOLAR": 1 },
+          "origin_affinity": "ORIGIN_PURE_SCHOLAR",
+          "schedule_archetype": "NIGHT_OWL_RESEARCH",
+          "doctrine_preset": "STRATAGEM",
+          "opening_thought_id": "THOUGHT_SCHOLAR_INQUIRY"
+        },
+        "D": {
+          "text": "구석에 앉아 장부와 곡식 시세를 묵묵히 계산하며 내실을 다진다.",
+          "stat_weights": { "LEA": 1, "MAR": 0, "INT": 2, "POL": 4, "CHA": 2 },
+          "passion_votes": ["POL"],
+          "trait_scores": { "T_AGRARIAN": 1, "T_UNSELFISH": 1 },
+          "origin_affinity": "ORIGIN_AGRARIAN_GENTRY",
+          "schedule_archetype": "EARLY_DISCIPLINE",
+          "doctrine_preset": "CONSERVATIVE",
+          "opening_thought_id": "THOUGHT_AGRARIAN_FOUNDATION"
+        }
+      }
+    },
+    {
+      "id": "Q2",
+      "scene_title": "황건의 불길: 굶주린 유민과 도적",
+      "prompt": "촌락을 지나는 길에 굶주려 쓰러진 유민들과 이들을 약탈하려는 황건적 잔당을 목격했다. 그대의 선택은?",
+      "fusion_eligible": true,
+      "choices": {
+        "A": {
+          "text": "칼을 빼 들고 유민들을 구하기 위해 도적 무리에게 돌진한다.",
+          "stat_weights": { "LEA": 2, "MAR": 4, "INT": 0, "POL": 0, "CHA": 3 },
+          "passion_votes": ["MAR"],
+          "trait_scores": { "T_CHIVALROUS": 1, "T_FIERCE": 1 },
+          "origin_affinity": "ORIGIN_CHIVALROUS_HERO",
+          "schedule_archetype": "MARTIAL_DRILL",
+          "doctrine_preset": "AGGRESSIVE",
+          "opening_thought_id": "THOUGHT_HEROIC_RESCUE"
+        },
+        "B": {
+          "text": "주변 지형을 살피고 기습하여 도적 수괴만 정확히 처단한다.",
+          "stat_weights": { "LEA": 3, "MAR": 2, "INT": 3, "POL": 0, "CHA": 1 },
+          "passion_votes": ["LEA", "INT"],
+          "trait_scores": { "T_CAUTIOUS": 1 },
+          "origin_affinity": "ORIGIN_FRONTIER_OFFICER",
+          "schedule_archetype": "EARLY_DISCIPLINE",
+          "doctrine_preset": "STRATAGEM",
+          "opening_thought_id": "THOUGHT_AMBUSH_STRIKE"
+        },
+        "C": {
+          "text": "살아남은 유민들을 규합하여 둔전과 자경단으로 조직화한다.",
+          "stat_weights": { "LEA": 3, "MAR": 1, "INT": 1, "POL": 3, "CHA": 1 },
+          "passion_votes": ["POL", "LEA"],
+          "trait_scores": { "T_AGRARIAN": 1 },
+          "origin_affinity": "ORIGIN_AGRARIAN_GENTRY",
+          "schedule_archetype": "EARLY_DISCIPLINE",
+          "doctrine_preset": "CONSERVATIVE",
+          "opening_thought_id": "THOUGHT_MILITIA_ORG"
+        },
+        "D": {
+          "text": "혼란을 틈타 도적의 군량 마차를 가로채어 장원 창고로 보낸다.",
+          "stat_weights": { "LEA": 1, "MAR": 2, "INT": 2, "POL": 1, "CHA": 3 },
+          "passion_votes": ["POL"],
+          "trait_scores": { "T_AMBITIOUS": 1, "T_GREEDY": 1 },
+          "origin_affinity": "ORIGIN_FALLEN_ROYAL",
+          "schedule_archetype": "SOCIAL_BANQUET",
+          "doctrine_preset": "COALITION",
+          "opening_thought_id": "THOUGHT_PRAGMATIC_LOOT"
+        }
+      }
+    },
+    {
+      "id": "Q3",
+      "scene_title": "권력과 명분: 부패한 현령의 은밀한 제안",
+      "prompt": "고을의 현령이 비밀리에 사람을 보내 뇌물을 바치며 자신의 비리를 눈감아달라 요구한다.",
+      "fusion_eligible": true,
+      "choices": {
+        "A": {
+          "text": "단칼에 거절하고 백성들 앞에서 그의 부패를 탄핵한다.",
+          "stat_weights": { "LEA": 2, "MAR": 1, "INT": 0, "POL": 2, "CHA": 4 },
+          "passion_votes": ["CHA"],
+          "trait_scores": { "T_UNSELFISH": 1, "T_CHIVALROUS": 1 },
+          "origin_affinity": "ORIGIN_FALLEN_ROYAL",
+          "schedule_archetype": "SOCIAL_BANQUET",
+          "doctrine_preset": "COALITION",
+          "opening_thought_id": "THOUGHT_RIGHTEOUS_IMPEACH"
+        },
+        "B": {
+          "text": "겉으로는 응하는 척하며 은밀히 증거를 수집해 역공할 준비를 한다.",
+          "stat_weights": { "LEA": 2, "MAR": 0, "INT": 4, "POL": 3, "CHA": 0 },
+          "passion_votes": ["INT"],
+          "trait_scores": { "T_CAUTIOUS": 1, "T_SCHOLAR": 1 },
+          "origin_affinity": "ORIGIN_PURE_SCHOLAR",
+          "schedule_archetype": "NIGHT_OWL_RESEARCH",
+          "doctrine_preset": "STRATAGEM",
+          "opening_thought_id": "THOUGHT_HIDDEN_DOSSIER"
+        },
+        "C": {
+          "text": "실리를 취해 사병 무장 자금으로 전환하고 통치권을 압박한다.",
+          "stat_weights": { "LEA": 1, "MAR": 2, "INT": 2, "POL": 2, "CHA": 2 },
+          "passion_votes": ["POL"],
+          "trait_scores": { "T_AMBITIOUS": 1, "T_GREEDY": 1 },
+          "origin_affinity": "ORIGIN_FALLEN_ROYAL",
+          "schedule_archetype": "SOCIAL_BANQUET",
+          "doctrine_preset": "COALITION",
+          "opening_thought_id": "THOUGHT_CORRUPT_BARGAIN"
+        },
+        "D": {
+          "text": "조건부 협상을 통해 지역의 행정 자치권을 합법적으로 양도받는다.",
+          "stat_weights": { "LEA": 3, "MAR": 0, "INT": 2, "POL": 4, "CHA": 0 },
+          "passion_votes": ["POL", "INT"],
+          "trait_scores": { "T_AGRARIAN": 1 },
+          "origin_affinity": "ORIGIN_AGRARIAN_GENTRY",
+          "schedule_archetype": "EARLY_DISCIPLINE",
+          "doctrine_preset": "CONSERVATIVE",
+          "opening_thought_id": "THOUGHT_AUTONOMY_PAGT"
+        }
+      }
+    },
+    {
+      "id": "Q4",
+      "scene_title": "전장의 철학: 열세인 병력으로 적을 마주했을 때",
+      "prompt": "적 대군이 성문 앞에 도달했다. 아군의 병력은 적의 3분의 1에 불과하다. 어떻게 대처하겠는가?",
+      "fusion_eligible": true,
+      "choices": {
+        "A": {
+          "text": "선봉에서 직접 일기토로 적장의 기세를 꺾고 사기를 드높인다.",
+          "stat_weights": { "LEA": 1, "MAR": 5, "INT": 0, "POL": 0, "CHA": 3 },
+          "passion_votes": ["MAR"],
+          "trait_scores": { "T_FIERCE": 1, "T_CHIVALROUS": 1 },
+          "origin_affinity": "ORIGIN_CHIVALROUS_HERO",
+          "schedule_archetype": "MARTIAL_DRILL",
+          "doctrine_preset": "AGGRESSIVE",
+          "opening_thought_id": "THOUGHT_DUEL_CHAMPION"
+        },
+        "B": {
+          "text": "보급로를 끊고 밤을 타 화공과 매복으로 적의 진을 흔든다.",
+          "stat_weights": { "LEA": 4, "MAR": 1, "INT": 4, "POL": 0, "CHA": 0 },
+          "passion_votes": ["INT", "LEA"],
+          "trait_scores": { "T_MYSTIC": 1, "T_CAUTIOUS": 1 },
+          "origin_affinity": "ORIGIN_FRONTIER_OFFICER",
+          "schedule_archetype": "NIGHT_OWL_RESEARCH",
+          "doctrine_preset": "STRATAGEM",
+          "opening_thought_id": "THOUGHT_FIRE_AMBUSH"
+        },
+        "C": {
+          "text": "성벽을 굳히고 방진을 유지하며 손실을 최소화해 지구전을 펼친다.",
+          "stat_weights": { "LEA": 3, "MAR": 2, "INT": 2, "POL": 2, "CHA": 0 },
+          "passion_votes": ["LEA", "POL"],
+          "trait_scores": { "T_CAUTIOUS": 1 },
+          "origin_affinity": "ORIGIN_AGRARIAN_GENTRY",
+          "schedule_archetype": "EARLY_DISCIPLINE",
+          "doctrine_preset": "CONSERVATIVE",
+          "opening_thought_id": "THOUGHT_FORTIFIED_SIEGE"
+        },
+        "D": {
+          "text": "인근 유력 세력에게 구원병을 요청하고 연합전선을 형성한다.",
+          "stat_weights": { "LEA": 2, "MAR": 0, "INT": 2, "POL": 3, "CHA": 4 },
+          "passion_votes": ["CHA", "POL"],
+          "trait_scores": { "T_SCHOLAR": 1 },
+          "origin_affinity": "ORIGIN_FALLEN_ROYAL",
+          "schedule_archetype": "SOCIAL_BANQUET",
+          "doctrine_preset": "COALITION",
+          "opening_thought_id": "THOUGHT_COALITION_DIPLOMACY"
+        }
+      }
+    },
+    {
+      "id": "Q5",
+      "scene_title": "몰입의 불꽃: 난세 속에서 가장 시간 가는 줄 모르는 일",
+      "prompt": "전란과 정무의 여유 속에서, 그대가 가장 깊이 몰입하며 희열을 느끼는 활동은?",
+      "fusion_eligible": true,
+      "choices": {
+        "A": {
+          "text": "고대의 병법서와 천문 지리 서적을 파고들며 새로운 전술을 연구한다.",
+          "stat_weights": { "LEA": 2, "MAR": 0, "INT": 5, "POL": 1, "CHA": 1 },
+          "passion_votes": ["INT"],
+          "trait_scores": { "T_SCHOLAR": 1, "T_MYSTIC": 1 },
+          "origin_affinity": "ORIGIN_PURE_SCHOLAR",
+          "schedule_archetype": "NIGHT_OWL_RESEARCH",
+          "doctrine_preset": "STRATAGEM",
+          "opening_thought_id": "THOUGHT_ANCIENT_TREATISE"
+        },
+        "B": {
+          "text": "대장간과 병영에서 정예병을 단련하고 명품 병기를 제련한다.",
+          "stat_weights": { "LEA": 3, "MAR": 4, "INT": 0, "POL": 1, "CHA": 1 },
+          "passion_votes": ["MAR"],
+          "trait_scores": { "T_FIERCE": 1 },
+          "origin_affinity": "ORIGIN_FRONTIER_OFFICER",
+          "schedule_archetype": "MARTIAL_DRILL",
+          "doctrine_preset": "AGGRESSIVE",
+          "opening_thought_id": "THOUGHT_FORGE_MASTERY"
+        },
+        "C": {
+          "text": "장원의 둔전을 개간하고 곡식 창고와 상단의 세수를 설계한다.",
+          "stat_weights": { "LEA": 1, "MAR": 0, "INT": 2, "POL": 5, "CHA": 1 },
+          "passion_votes": ["POL"],
+          "trait_scores": { "T_AGRARIAN": 1, "T_UNSELFISH": 1 },
+          "origin_affinity": "ORIGIN_AGRARIAN_GENTRY",
+          "schedule_archetype": "EARLY_DISCIPLINE",
+          "doctrine_preset": "CONSERVATIVE",
+          "opening_thought_id": "THOUGHT_MANOR_HARVEST"
+        },
+        "D": {
+          "text": "영웅호걸들을 불러모아 명주를 나누며 천하 정세를 논한다.",
+          "stat_weights": { "LEA": 2, "MAR": 0, "INT": 1, "POL": 2, "CHA": 5 },
+          "passion_votes": ["CHA"],
+          "trait_scores": { "T_CHIVALROUS": 1, "T_DRINKER": 1 },
+          "origin_affinity": "ORIGIN_FALLEN_ROYAL",
+          "schedule_archetype": "SOCIAL_BANQUET",
+          "doctrine_preset": "COALITION",
+          "opening_thought_id": "THOUGHT_BANQUET_HEROES"
+        }
+      }
+    },
+    {
+      "id": "Q6",
+      "scene_title": "인간의 그림자: 내면의 약점과 명암 페어링",
+      "prompt": "자신의 성공을 가로막는 가장 큰 내면의 걸림돌 혹은 유혹은 무엇인가?",
+      "fusion_eligible": true,
+      "choices": {
+        "A": {
+          "text": "천하를 거머쥐겠다는 강렬한 공명심과, 뜻대로 되지 않을 때 찾아오는 초조함.",
+          "stat_weights": { "LEA": 2, "MAR": 2, "INT": 2, "POL": 2, "CHA": 2 },
+          "passion_votes": ["LEA"],
+          "trait_scores": { "T_AMBITIOUS": -1 },
+          "origin_affinity": "ORIGIN_FALLEN_ROYAL",
+          "schedule_archetype": "EARLY_DISCIPLINE",
+          "doctrine_preset": "AGGRESSIVE",
+          "opening_thought_id": "THOUGHT_SHADOW_AMBITION"
+        },
+        "B": {
+          "text": "명주와 풍류를 즐기는 호탕한 주흥으로 인해 일을 그르칠 때가 있다.",
+          "stat_weights": { "LEA": 1, "MAR": 2, "INT": 1, "POL": 1, "CHA": 5 },
+          "passion_votes": ["CHA"],
+          "trait_scores": { "T_DRINKER": -1 },
+          "origin_affinity": "ORIGIN_CHIVALROUS_HERO",
+          "schedule_archetype": "SOCIAL_BANQUET",
+          "doctrine_preset": "COALITION",
+          "opening_thought_id": "THOUGHT_SHADOW_WINE"
+        },
+        "C": {
+          "text": "지나치게 신중하고 완벽을 기하느라 결단을 내릴 때 타이밍을 놓친다.",
+          "stat_weights": { "LEA": 2, "MAR": 0, "INT": 4, "POL": 3, "CHA": 1 },
+          "passion_votes": ["INT"],
+          "trait_scores": { "T_CAUTIOUS": -1 },
+          "origin_affinity": "ORIGIN_PURE_SCHOLAR",
+          "schedule_archetype": "NIGHT_OWL_RESEARCH",
+          "doctrine_preset": "CONSERVATIVE",
+          "opening_thought_id": "THOUGHT_SHADOW_CAUTION"
+        },
+        "D": {
+          "text": "불같은 혈기와 승부욕으로 인해 가끔 분노를 참지 못하고 충돌한다.",
+          "stat_weights": { "LEA": 1, "MAR": 5, "INT": 0, "POL": 0, "CHA": 4 },
+          "passion_votes": ["MAR"],
+          "trait_scores": { "T_FIERCE": -1, "T_GREEDY": -1 },
+          "origin_affinity": "ORIGIN_FRONTIER_OFFICER",
+          "schedule_archetype": "MARTIAL_DRILL",
+          "doctrine_preset": "AGGRESSIVE",
+          "opening_thought_id": "THOUGHT_SHADOW_FIERCE"
+        }
+      }
+    },
+    {
+      "id": "Q7",
+      "scene_title": "삶의 리듬: 하루 일과 방식과 자율성 프리셋",
+      "prompt": "장원을 경영하고 가신들을 통솔할 때, 그대가 선호하는 하루의 시간 리듬은?",
+      "fusion_eligible": true,
+      "choices": {
+        "A": {
+          "text": "새벽 진시에 기상하여 규율 엄격하게 오전 집무와 오후 순찰을 소화한다.",
+          "stat_weights": { "LEA": 3, "MAR": 2, "INT": 2, "POL": 3, "CHA": 0 },
+          "passion_votes": ["LEA", "POL"],
+          "trait_scores": { "T_CAUTIOUS": 1 },
+          "origin_affinity": "ORIGIN_AGRARIAN_GENTRY",
+          "schedule_archetype": "EARLY_DISCIPLINE",
+          "doctrine_preset": "CONSERVATIVE",
+          "opening_thought_id": "THOUGHT_RHYTHM_DISCIPLINE"
+        },
+        "B": {
+          "text": "낮에는 고요히 사색하고 술시와 해시에 깊은 연구와 밀사를 진행한다.",
+          "stat_weights": { "LEA": 1, "MAR": 0, "INT": 5, "POL": 2, "CHA": 2 },
+          "passion_votes": ["INT"],
+          "trait_scores": { "T_SCHOLAR": 1, "T_MYSTIC": 1 },
+          "origin_affinity": "ORIGIN_PURE_SCHOLAR",
+          "schedule_archetype": "NIGHT_OWL_RESEARCH",
+          "doctrine_preset": "STRATAGEM",
+          "opening_thought_id": "THOUGHT_RHYTHM_NIGHT"
+        },
+        "C": {
+          "text": "오전에는 장병들과 함께 땀 흘려 연무하고, 오후에는 전술을 연마한다.",
+          "stat_weights": { "LEA": 4, "MAR": 4, "INT": 1, "POL": 0, "CHA": 1 },
+          "passion_votes": ["MAR", "LEA"],
+          "trait_scores": { "T_FIERCE": 1 },
+          "origin_affinity": "ORIGIN_FRONTIER_OFFICER",
+          "schedule_archetype": "MARTIAL_DRILL",
+          "doctrine_preset": "AGGRESSIVE",
+          "opening_thought_id": "THOUGHT_RHYTHM_DRILL"
+        },
+        "D": {
+          "text": "사람들과 어울려 연회와 대화를 나누며 인맥을 넓히고 사기를 진작한다.",
+          "stat_weights": { "LEA": 1, "MAR": 0, "INT": 1, "POL": 2, "CHA": 6 },
+          "passion_votes": ["CHA", "POL"],
+          "trait_scores": { "T_CHIVALROUS": 1 },
+          "origin_affinity": "ORIGIN_FALLEN_ROYAL",
+          "schedule_archetype": "SOCIAL_BANQUET",
+          "doctrine_preset": "COALITION",
+          "opening_thought_id": "THOUGHT_RHYTHM_BANQUET"
+        }
+      }
+    },
+    {
+      "id": "Q8",
+      "scene_title": "첫 발걸음: 거점 선정과 천하를 향한 숙원",
+      "prompt": "마침내 난세에 첫발을 내딛는 그대. 어느 주(州)의 현(縣)에 본영 장원을 세우고 어떤 대업을 꿈꾸는가?",
+      "fusion_eligible": true,
+      "choices": {
+        "A": {
+          "text": "업군(예주)에 장원을 세우고 둔전 자립과 농업 생산 극대화부터 이룩한다.",
+          "stat_weights": { "LEA": 2, "MAR": 0, "INT": 2, "POL": 5, "CHA": 1 },
+          "passion_votes": ["POL"],
+          "trait_scores": { "T_AGRARIAN": 1 },
+          "origin_affinity": "ORIGIN_AGRARIAN_GENTRY",
+          "schedule_archetype": "EARLY_DISCIPLINE",
+          "doctrine_preset": "CONSERVATIVE",
+          "opening_thought_id": "THOUGHT_GOAL_FARM"
+        },
+        "B": {
+          "text": "낙양 근교에 장원을 세우고 천하의 명장들과 가신들을 규합한다.",
+          "stat_weights": { "LEA": 4, "MAR": 2, "INT": 1, "POL": 1, "CHA": 3 },
+          "passion_votes": ["LEA", "CHA"],
+          "trait_scores": { "T_CHIVALROUS": 1 },
+          "origin_affinity": "ORIGIN_FALLEN_ROYAL",
+          "schedule_archetype": "SOCIAL_BANQUET",
+          "doctrine_preset": "COALITION",
+          "opening_thought_id": "THOUGHT_GOAL_HEROES"
+        },
+        "C": {
+          "text": "서주 하비에 장원을 세우고 철저한 군비 확장과 무기 제련에 매진한다.",
+          "stat_weights": { "LEA": 3, "MAR": 4, "INT": 1, "POL": 0, "CHA": 2 },
+          "passion_votes": ["MAR"],
+          "trait_scores": { "T_FIERCE": 1 },
+          "origin_affinity": "ORIGIN_FRONTIER_OFFICER",
+          "schedule_archetype": "MARTIAL_DRILL",
+          "doctrine_preset": "AGGRESSIVE",
+          "opening_thought_id": "THOUGHT_GOAL_ARMOR"
+        },
+        "D": {
+          "text": "형주 융중에 장원을 세우고 천하삼분지계의 큰 책략을 도모한다.",
+          "stat_weights": { "LEA": 1, "MAR": 0, "INT": 5, "POL": 3, "CHA": 1 },
+          "passion_votes": ["INT"],
+          "trait_scores": { "T_SCHOLAR": 1, "T_MYSTIC": 1 },
+          "origin_affinity": "ORIGIN_PURE_SCHOLAR",
+          "schedule_archetype": "NIGHT_OWL_RESEARCH",
+          "doctrine_preset": "STRATAGEM",
+          "opening_thought_id": "THOUGHT_GOAL_STRATAGEM"
+        }
+      }
+    }
+  ],
+  "schedule_archetypes": {
+    "EARLY_DISCIPLINE": {
+      "name_ko": "새벽 규율형 (아침 일찍 기상, 철저한 둔전/정무 집무)",
+      "shichen_blocks": {
+        "ZI": "SLEEP",
+        "CHOU": "SLEEP",
+        "YIN": "WORK",
+        "MAO": "WORK",
+        "CHEN": "WORK",
+        "SI": "WORK",
+        "WU": "RECREATION",
+        "WEI": "WORK",
+        "SHEN": "DRILL",
+        "YOU": "WORK",
+        "XU": "RECREATION",
+        "HAI": "SLEEP"
+      },
+      "work_priorities": {
+        "farmland": 1,
+        "granary": 2,
+        "barracks": 3,
+        "workshop": 4,
+        "study": 3,
+        "defense": 2,
+        "social": 4
+      }
+    },
+    "NIGHT_OWL_RESEARCH": {
+      "name_ko": "야행 몰입형 (낮에는 사색 및 여유, 밤늦게 연구/책략 심취)",
+      "shichen_blocks": {
+        "ZI": "WORK",
+        "CHOU": "SLEEP",
+        "YIN": "SLEEP",
+        "MAO": "RECREATION",
+        "CHEN": "WORK",
+        "SI": "WORK",
+        "WU": "RECREATION",
+        "WEI": "WORK",
+        "SHEN": "WORK",
+        "YOU": "DRILL",
+        "XU": "WORK",
+        "HAI": "WORK"
+      },
+      "work_priorities": {
+        "study": 1,
+        "workshop": 2,
+        "farmland": 3,
+        "granary": 3,
+        "barracks": 4,
+        "defense": 2,
+        "social": 4
+      }
+    },
+    "MARTIAL_DRILL": {
+      "name_ko": "무예 연마형 (주야로 병영과 대장간에서 무예 및 군사 훈련)",
+      "shichen_blocks": {
+        "ZI": "SLEEP",
+        "CHOU": "SLEEP",
+        "YIN": "DRILL",
+        "MAO": "DRILL",
+        "CHEN": "WORK",
+        "SI": "DRILL",
+        "WU": "RECREATION",
+        "WEI": "DRILL",
+        "SHEN": "DRILL",
+        "YOU": "WORK",
+        "XU": "RECREATION",
+        "HAI": "SLEEP"
+      },
+      "work_priorities": {
+        "barracks": 1,
+        "workshop": 2,
+        "defense": 2,
+        "farmland": 3,
+        "granary": 4,
+        "study": 4,
+        "social": 3
+      }
+    },
+    "SOCIAL_BANQUET": {
+      "name_ko": "사교 풍류형 (연회와 가신 교류, 인맥 및 외교 중심)",
+      "shichen_blocks": {
+        "ZI": "SLEEP",
+        "CHOU": "SLEEP",
+        "YIN": "WORK",
+        "MAO": "RECREATION",
+        "CHEN": "WORK",
+        "SI": "RECREATION",
+        "WU": "RECREATION",
+        "WEI": "WORK",
+        "SHEN": "RECREATION",
+        "YOU": "WORK",
+        "XU": "RECREATION",
+        "HAI": "RECREATION"
+      },
+      "work_priorities": {
+        "social": 1,
+        "granary": 2,
+        "farmland": 2,
+        "barracks": 3,
+        "workshop": 3,
+        "study": 4,
+        "defense": 4
+      }
+    }
+  },
+  "doctrine_presets": {
+    "AGGRESSIVE": {
+      "name_ko": "적극 공세 (적 발견 즉시 요격, 공성 및 일기토 선호)",
+      "engagement_rule": "ENGAGE_ON_SIGHT",
+      "retreat_threshold_bp": 200,
+      "pursuit_range": 50
+    },
+    "STRATAGEM": {
+      "name_ko": "신중 계산 (화공 및 매복 우선, 불리한 교전 회피)",
+      "engagement_rule": "AMBUSH_AND_STRATAGEM",
+      "retreat_threshold_bp": 400,
+      "pursuit_range": 20
+    },
+    "CONSERVATIVE": {
+      "name_ko": "수비 고수 (성벽과 망루 방어 중심, 손실 30% 시 퇴각)",
+      "engagement_rule": "HOLD_WALLS_ONLY",
+      "retreat_threshold_bp": 600,
+      "pursuit_range": 10
+    },
+    "COALITION": {
+      "name_ko": "외교 유연 (세력 협력 및 구원 요청 우선, 교전 최소화)",
+      "engagement_rule": "DIPLOMATIC_RETREAT",
+      "retreat_threshold_bp": 500,
+      "pursuit_range": 15
+    }
+  }
+}

@@ -1,0 +1,185 @@
+{
+  "schema_version": "M2_OFFICERS_CATALOG_V1",
+  "origins": [
+    {
+      "id": "ORIGIN_FALLEN_ROYAL",
+      "name_ko": "몰락 황족",
+      "stat_bonuses": { "LEA": 3, "MAR": 1, "INT": 2, "POL": 2, "CHA": 7 },
+      "starting_resources": { "GRAIN": 500, "COIN": 400, "WOOD": 200, "IRON": 100, "HORSES": 2, "HERBS_WINE": 5, "WEAPONS": 5, "MERIT": 50 },
+      "starting_troops": 100,
+      "perks": ["PERK_BLOODLINE_CHARISMA", "PERK_IMPERIAL_FAVOR"]
+    },
+    {
+      "id": "ORIGIN_FRONTIER_OFFICER",
+      "name_ko": "변방 무관",
+      "stat_bonuses": { "LEA": 6, "MAR": 7, "INT": -1, "POL": -1, "CHA": 4 },
+      "starting_resources": { "GRAIN": 400, "COIN": 300, "WOOD": 250, "IRON": 150, "HORSES": 4, "HERBS_WINE": 2, "WEAPONS": 12, "MERIT": 40 },
+      "starting_troops": 150,
+      "perks": ["PERK_VETERAN_COMMAND", "PERK_BORDER_CAV"]
+    },
+    {
+      "id": "ORIGIN_PURE_SCHOLAR",
+      "name_ko": "청류 명사",
+      "stat_bonuses": { "LEA": -1, "MAR": -2, "INT": 8, "POL": 6, "CHA": 4 },
+      "starting_resources": { "GRAIN": 300, "COIN": 600, "WOOD": 300, "IRON": 50, "HORSES": 1, "HERBS_WINE": 8, "WEAPONS": 2, "MERIT": 60 },
+      "starting_troops": 60,
+      "perks": ["PERK_STRATEGIC_VISION", "PERK_QINGLIU_NET"]
+    },
+    {
+      "id": "ORIGIN_CHIVALROUS_HERO",
+      "name_ko": "의협 호걸",
+      "stat_bonuses": { "LEA": 4, "MAR": 6, "INT": 1, "POL": -2, "CHA": 6 },
+      "starting_resources": { "GRAIN": 350, "COIN": 350, "WOOD": 200, "IRON": 100, "HORSES": 3, "HERBS_WINE": 6, "WEAPONS": 10, "MERIT": 45 },
+      "starting_troops": 120,
+      "perks": ["PERK_SWORN_BROTHERHOOD", "PERK_KNIGHT_ERRANT"]
+    },
+    {
+      "id": "ORIGIN_AGRARIAN_GENTRY",
+      "name_ko": "둔전 호족",
+      "stat_bonuses": { "LEA": 2, "MAR": 1, "INT": 3, "POL": 7, "CHA": 2 },
+      "starting_resources": { "GRAIN": 800, "COIN": 500, "WOOD": 400, "IRON": 80, "HORSES": 2, "HERBS_WINE": 4, "WEAPONS": 4, "MERIT": 40 },
+      "starting_troops": 80,
+      "perks": ["PERK_AUTONOMOUS_FARM", "PERK_LOCAL_GENTRY"]
+    }
+  ],
+  "traits": [
+    { "id": "T_CHIVALROUS", "polarity": "LIGHT", "cost": 1, "name_ko": "의협", "stipend_mult_bp": 1000, "flags": ["FLAG_HONOR"] },
+    { "id": "T_AMBITIOUS", "polarity": "SHADOW", "cost": -1, "name_ko": "야심가", "stipend_mult_bp": 1200, "flags": ["FLAG_AMBITION"] },
+    { "id": "T_CAUTIOUS", "polarity": "SHADOW", "cost": -1, "name_ko": "신중함", "stipend_mult_bp": 950, "flags": ["FLAG_PRUDENT"] },
+    { "id": "T_DRINKER", "polarity": "SHADOW", "cost": -1, "name_ko": "호주가", "stipend_mult_bp": 1050, "flags": ["FLAG_WINE"] },
+    { "id": "T_MYSTIC", "polarity": "LIGHT", "cost": 1, "name_ko": "둔갑", "stipend_mult_bp": 1000, "flags": ["FLAG_STRATAGEM"] },
+    { "id": "T_UNSELFISH", "polarity": "LIGHT", "cost": 1, "name_ko": "청렴", "stipend_mult_bp": 900, "flags": ["FLAG_LOYALTY"] },
+    { "id": "T_GREEDY", "polarity": "SHADOW", "cost": -1, "name_ko": "탐욕", "stipend_mult_bp": 1300, "flags": ["FLAG_CORRUPTION"] },
+    { "id": "T_FIERCE", "polarity": "SHADOW", "cost": -1, "name_ko": "맹장", "stipend_mult_bp": 1100, "flags": ["FLAG_DUEL"] },
+    { "id": "T_AGRARIAN", "polarity": "LIGHT", "cost": 1, "name_ko": "둔전가", "stipend_mult_bp": 1000, "flags": ["FLAG_FARM"] },
+    { "id": "T_SCHOLAR", "polarity": "LIGHT", "cost": 1, "name_ko": "명사", "stipend_mult_bp": 1000, "flags": ["FLAG_FAME"] }
+  ],
+  "historical_officers": [
+    {
+      "id": "OFF_CAO_CAO",
+      "name_ko": "조조",
+      "stats": { "LEA": 95, "MAR": 78, "INT": 92, "POL": 96, "CHA": 94 },
+      "traits": ["T_AMBITIOUS", "T_SCHOLAR"],
+      "passions": ["INT", "POL", "LEA"]
+    },
+    {
+      "id": "OFF_LIU_BEI",
+      "name_ko": "유비",
+      "stats": { "LEA": 84, "MAR": 75, "INT": 78, "POL": 82, "CHA": 99 },
+      "traits": ["T_CHIVALROUS", "T_UNSELFISH"],
+      "passions": ["CHA", "LEA", "POL"]
+    },
+    {
+      "id": "OFF_SUN_JIAN",
+      "name_ko": "손견",
+      "stats": { "LEA": 90, "MAR": 93, "INT": 72, "POL": 76, "CHA": 88 },
+      "traits": ["T_FIERCE", "T_CHIVALROUS"],
+      "passions": ["MAR", "LEA"]
+    },
+    {
+      "id": "OFF_ZHAO_YUN",
+      "name_ko": "조운",
+      "stats": { "LEA": 88, "MAR": 96, "INT": 76, "POL": 70, "CHA": 91 },
+      "traits": ["T_CHIVALROUS", "T_CAUTIOUS"],
+      "passions": ["MAR", "LEA"]
+    },
+    {
+      "id": "OFF_GUAN_YU",
+      "name_ko": "관우",
+      "stats": { "LEA": 92, "MAR": 97, "INT": 74, "POL": 65, "CHA": 93 },
+      "traits": ["T_FIERCE", "T_UNSELFISH"],
+      "passions": ["MAR", "LEA"]
+    },
+    {
+      "id": "OFF_ZHANG_FEI",
+      "name_ko": "장비",
+      "stats": { "LEA": 82, "MAR": 98, "INT": 50, "POL": 45, "CHA": 75 },
+      "traits": ["T_FIERCE", "T_DRINKER"],
+      "passions": ["MAR"]
+    },
+    {
+      "id": "OFF_ZHUGE_LIANG",
+      "name_ko": "제갈량",
+      "stats": { "LEA": 93, "MAR": 55, "INT": 100, "POL": 98, "CHA": 92 },
+      "traits": ["T_MYSTIC", "T_SCHOLAR"],
+      "passions": ["INT", "POL"]
+    },
+    {
+      "id": "OFF_ZHOU_YU",
+      "name_ko": "주유",
+      "stats": { "LEA": 94, "MAR": 82, "INT": 96, "POL": 88, "CHA": 95 },
+      "traits": ["T_AMBITIOUS", "T_SCHOLAR"],
+      "passions": ["INT", "LEA"]
+    },
+    {
+      "id": "OFF_GUO_JIA",
+      "name_ko": "곽가",
+      "stats": { "LEA": 70, "MAR": 40, "INT": 98, "POL": 85, "CHA": 80 },
+      "traits": ["T_MYSTIC", "T_DRINKER"],
+      "passions": ["INT"]
+    },
+    {
+      "id": "OFF_LU_BU",
+      "name_ko": "여포",
+      "stats": { "LEA": 85, "MAR": 100, "INT": 28, "POL": 20, "CHA": 70 },
+      "traits": ["T_FIERCE", "T_GREEDY"],
+      "passions": ["MAR"]
+    },
+    {
+      "id": "OFF_XIAHOU_DUN",
+      "name_ko": "하후돈",
+      "stats": { "LEA": 87, "MAR": 91, "INT": 65, "POL": 70, "CHA": 85 },
+      "traits": ["T_FIERCE", "T_UNSELFISH"],
+      "passions": ["MAR", "LEA"]
+    },
+    {
+      "id": "OFF_SIMA_YI",
+      "name_ko": "사마의",
+      "stats": { "LEA": 91, "MAR": 70, "INT": 97, "POL": 94, "CHA": 82 },
+      "traits": ["T_AMBITIOUS", "T_CAUTIOUS"],
+      "passions": ["INT", "POL"]
+    }
+  ],
+  "complementary_retainers": [
+    {
+      "id": "RET_YUN_CHANG",
+      "name_ko": "운장 (통솔 보완)",
+      "specialty": "LEA",
+      "stats": { "LEA": 85, "MAR": 75, "INT": 60, "POL": 60, "CHA": 70 },
+      "traits": ["T_CAUTIOUS"],
+      "initial_affinity": 40
+    },
+    {
+      "id": "RET_FENG_XIAN",
+      "name_ko": "봉선 (무력 보완)",
+      "specialty": "MAR",
+      "stats": { "LEA": 60, "MAR": 90, "INT": 45, "POL": 40, "CHA": 65 },
+      "traits": ["T_FIERCE"],
+      "initial_affinity": 40
+    },
+    {
+      "id": "RET_GONG_DA",
+      "name_ko": "공달 (지력 보완)",
+      "specialty": "INT",
+      "stats": { "LEA": 50, "MAR": 45, "INT": 88, "POL": 80, "CHA": 65 },
+      "traits": ["T_SCHOLAR"],
+      "initial_affinity": 40
+    },
+    {
+      "id": "RET_ZI_JING",
+      "name_ko": "자경 (정치 보완)",
+      "specialty": "POL",
+      "stats": { "LEA": 50, "MAR": 40, "INT": 75, "POL": 89, "CHA": 78 },
+      "traits": ["T_AGRARIAN"],
+      "initial_affinity": 40
+    },
+    {
+      "id": "RET_GONG_JIN",
+      "name_ko": "공근 (매력 보완)",
+      "specialty": "CHA",
+      "stats": { "LEA": 65, "MAR": 60, "INT": 70, "POL": 70, "CHA": 90 },
+      "traits": ["T_CHIVALROUS"],
+      "initial_affinity": 40
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "schema_version": "M2_SCENARIO_YELLOW_TURBAN_FIEF_START_V1",
+  "scenario_meta": {
+    "id": "yellow_turban_fief_start",
+    "name_ko": "황건의 난 - 예군 장원 개척",
+    "seed": 18401,
+    "start_tick": 0,
+    "target_county": "ye_county",
+    "starter_state": "jizhou"
+  },
+  "avatar": {
+    "name_ko": "주인공 (의협 호걸)",
+    "origin": "ORIGIN_CHIVALROUS_HERO",
+    "stats": { "LEA": 65, "MAR": 72, "INT": 60, "POL": 63, "CHA": 60 },
+    "needs": {
+      "food": 1000,
+      "rest": 1000,
+      "mood": 85,
+      "social": 80,
+      "recreation": 80
+    },
+    "traits": ["T_CHIVALROUS", "T_AMBITIOUS"],
+    "work_priorities": {
+      "farmland": 1,
+      "granary": 2,
+      "barracks": 2,
+      "workshop": 3,
+      "study": 3,
+      "defense": 1,
+      "social": 4
+    },
+    "schedule_archetype": "EARLY_DISCIPLINE",
+    "doctrine_preset": "CONSERVATIVE"
+  },
+  "retainers": [
+    {
+      "id": "RET_YUN_CHANG",
+      "name_ko": "관우 (운장)",
+      "specialty": "LEA",
+      "stats": { "LEA": 85, "MAR": 75, "INT": 60, "POL": 60, "CHA": 70 },
+      "needs": { "food": 1000, "rest": 1000, "mood": 90, "social": 80, "recreation": 80 },
+      "traits": ["T_CAUTIOUS"],
+      "work_priorities": { "farmland": 2, "granary": 2, "barracks": 1, "workshop": 3, "study": 3, "defense": 1, "social": 3 },
+      "schedule_archetype": "MARTIAL_DRILL",
+      "doctrine_preset": "AGGRESSIVE",
+      "initial_affinity": 40
+    },
+    {
+      "id": "RET_FENG_XIAN",
+      "name_ko": "여포 (봉선)",
+      "specialty": "MAR",
+      "stats": { "LEA": 60, "MAR": 90, "INT": 45, "POL": 40, "CHA": 65 },
+      "needs": { "food": 1000, "rest": 1000, "mood": 80, "social": 70, "recreation": 70 },
+      "traits": ["T_FIERCE"],
+      "work_priorities": { "farmland": 3, "granary": 3, "barracks": 1, "workshop": 2, "study": 4, "defense": 1, "social": 4 },
+      "schedule_archetype": "MARTIAL_DRILL",
+      "doctrine_preset": "AGGRESSIVE",
+      "initial_affinity": 40
+    },
+    {
+      "id": "RET_GONG_DA",
+      "name_ko": "순유 (공달)",
+      "specialty": "INT",
+      "stats": { "LEA": 50, "MAR": 45, "INT": 88, "POL": 80, "CHA": 65 },
+      "needs": { "food": 1000, "rest": 1000, "mood": 85, "social": 80, "recreation": 80 },
+      "traits": ["T_SCHOLAR"],
+      "work_priorities": { "farmland": 2, "granary": 1, "barracks": 4, "workshop": 2, "study": 1, "defense": 2, "social": 3 },
+      "schedule_archetype": "NIGHT_OWL_RESEARCH",
+      "doctrine_preset": "STRATAGEM",
+      "initial_affinity": 40
+    }
+  ],
+  "starting_resources": {
+    "GRAIN": 1000,
+    "COIN": 800,
+    "WOOD": 600,
+    "IRON": 250,
+    "HORSES": 5,
+    "HERBS_WINE": 10,
+    "WEAPONS": 20,
+    "MERIT": 100
+  },
+  "manor_buildings": {
+    "MAIN_HALL": 1,
+    "QUARTERS": 1,
+    "MILITARY_FARM": 1,
+    "GRANARY_VAULT": 1,
+    "HORSE_PASTURE": 1,
+    "SMITHY_ARMORY": 1,
+    "BARRACKS_DRILL": 1,
+    "STUDY_PAVILION": 1,
+    "BANQUET_HALL": 1,
+    "WATCHTOWER_WALL": 1
+  },
+  "scripted_events": [
+    {
+      "tick": 200,
+      "event_id": "EVT_YELLOW_TURBAN_RAID",
+      "name_ko": "황건적 잔당의 야습 기습",
+      "description": "인근 산세를 거점으로 삼던 황건적 잔당 50명이 장원의 군량고를 노리고 야습을 감행해왔다. 방어선과 수성 수칙에 따라 요격하라.",
+      "enemy_forces": {
+        "count": 50,
+        "morale": 80,
+        "attack": 60
+      }
+    }
+  ]
+}
