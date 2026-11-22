@@ -82,6 +82,8 @@ Every feature identified during Step 0 Survey across all 3 Survey Explorers is c
 | 50 | `F-43` | **6-Stage Server-Authoritative Command Validation & Anti-Cheat Pipeline** | Wire safety (`bytes_to_var` object deserialization disabled), session ownership binding, monotonic `cmd_seq` + token-bucket rate limiter, political role check, resource escrow check, and audit logging. | M5 | survey_1, survey_3 |
 | 51 | `F-44` | **Hybrid JSONL WAL + `/usr/bin/sqlite3` Relational Persistence Engine** | Real-time `wal_commands.jsonl` + double-buffered atomic JSON snapshots + transactional `/usr/bin/sqlite3` sync to `saves/world_state.db` (10 relational tables including `persona_import_challenges`) with deterministic crash replay. | M5 | survey_3 |
 | 52 | `F-45` | **Programmatic Godot 4 Client UI Views (`장원 뷰 / 천하 전략도 / 정청 및 거래소 HUD`)** | Code-first GDScript client views (`src/ui/`) rendering the `32×32` Manor grid, Work Priority Matrix & Schedule editor, Three Kingdoms Macro Graph, Coalition Siege planner, and Morning Gazette modal. | M6 | survey_1, survey_3 |
+| 53 | `FH-07` | **Godot 4.4.1 Web (HTML5/WASM) Export & GitHub Pages CI/CD Pipeline** | Single-threaded WebGL 2.0 (`gl_compatibility`, `variant/thread_support=false`) `export_presets.cfg`, `coi-serviceworker.js` isolation shim, and automated `.github/workflows/deploy-pages.yml` publishing the playable HTML5/WASM client build (`index.html`, `.wasm`, `.pck`, `.js`) to GitHub Pages. | M7 | m7_survey_1, m7_survey_2, m7_survey_3 |
+| 54 | `F-46` | **Browser-Playable WebAssembly Live Demo & Korean CJK Web Font / PCK Runtime Compatibility** | Auto-starting in-browser `LiveSessionDriver` local demo (`player_01` + `lord_wei` + `ally_shu`), `.pck`-first `ResourceLoader` audio/texture loading, and bundled Korean CJK `FontFile` support for WebAssembly where `SystemFont` is unavailable. | M7 | m7_survey_1, m7_survey_2 |
 
 ---
 
@@ -96,6 +98,7 @@ Every feature identified during Step 0 Survey across all 3 Survey Explorers is c
 | **M4** | **Dual Roleplay Politics (Officer ↔ Lord), Coalition Sieges, Espionage & Diplomacy** | Implement 4-Tier Hierarchy & 9-Rank Court Merit Ladder (`F-27`), Faction Mission Board & Idle Auto-Queue (`F-28`), Retainer Proposals (`F-29`), Governor (`태수`) & Viceroy (`도독`) Delegation (`F-30`), Lord Macro Policy Sliders (`F-31`), Espionage/Poaching/Defection/Governor Rebellion (`F-32`), Multi-Army Coalition Sieges & Supply Interdiction (`F-25`), Affinity/Sworn Sibling Graph (`F-33`), Banquets (`F-34`), and 4-Season Cycle & Treaties (`F-36`). (`F-25`, `F-27`..`F-34`, `F-36`) | M3 | DONE (Verified: Stage 1 44 files & 7 JSON PASS, Stage 2 94/94 tests & 4377 assertions PASS, Forensic Audit CLEAN) |
 | **M5** | **Authoritative Network Protocol, 6-Stage Security & Hybrid WAL + SQLite Persistence** | Implement `INetworkTransport` (`WebSocket`, `ENet`, `LoopbackMemory`) & 4-Channel Interest Delta Manager (`F-42`), 6-Stage Command Validator & Token-Bucket Rate Limiter (`F-43`), Hybrid JSONL WAL + Atomic Snapshot + `/usr/bin/sqlite3` `world_state.db` Persistence Engine (`F-44`), Reconnect Morning Court Gazette (`F-38`), and Asynchronous Event Decision Queue (`F-39`). (`F-38`, `F-39`, `F-42`..`F-44`) | M4 | DONE (Verified: Stage 1 56 files & 7 JSON PASS, Stage 2 102/102 tests & 4587 assertions PASS, 10-table SQLite + WAL/Snapshot + 6-stage anti-cheat verified, Forensic Audit CLEAN) |
 | **M6** | **Programmatic Client UI Views, Season Hegemony & Full Shared-World E2E Verification** | Implement Programmatic GDScript Client UI Views (`F-45`), Season Era Hegemony & Lineage Succession (`F-37`), Stage 4 Multi-Process/Multi-Client Shared-World Smoke Harness (`FH-06`: `net_harness.gd`, `run_net_smoke.py`, `audit_verifier.py`), and pass 100% of E2E tests (Tiers 1–4) + Tier 5 Adversarial Coverage Hardening. (`FH-06`, `F-37`, `F-45`) | M5 | DONE (Verified: Stage 1 64 GDScript & 7 JSON --strict --require-all PASS, Stage 2 110/110 tests & 4853 assertions PASS, Stage 3 10k-tick + 3 unseen seeds PASS, Stage 4 Loopback + Multi-Process WebSocket + 10-table SQLite Audit PASS, Headless Scene Boot PASS, Forensic Checks #1–#7 CLEAN) |
+| **M7** | **Godot 4.4.1 Web (HTML5/WASM) Export & GitHub Pages Live Browser Demo Deployment** | Configure `export_presets.cfg` (`Web` single-threaded WASM + `coi-serviceworker.js`), `project.godot` WebGL2 `gl_compatibility` renderer, Web Korean CJK font & `.pck` audio/asset loading compatibility, `.github/workflows/deploy-pages.yml` CI/CD deployment pipeline, GitHub Pages enablement, unit tests, and `README.md` live browser demo documentation with 0 regressions across Stage 0–4. (`FH-07`, `F-46`) | M6 | IN_PROGRESS |
 
 ---
 
@@ -140,7 +143,13 @@ Every feature identified during Step 0 Survey across all 3 Survey Explorers is c
 ```
 /home/antigravity/
 ├── PROJECT.md                           # Global Architecture, Feature Inventory, Milestones, Contracts
-├── project.godot                        # Godot 4 project config (strict GDScript warnings-as-errors = 2)
+├── project.godot                        # Godot 4 project config (strict GDScript warnings-as-errors = 2, Web gl_compatibility)
+├── export_presets.cfg                   # [M7] Godot 4.4.1 Web (HTML5/WASM) export preset (single-threaded + coi-serviceworker)
+├── .github/
+│   └── workflows/
+│       └── deploy-pages.yml             # [M7] Automated Godot 4.4.1 Web export & GitHub Pages deployment workflow
+├── web/
+│   └── coi-serviceworker.js             # [M7] Cross-Origin-Isolation service worker shim for GitHub Pages
 ├── docs/                                # [M0 Deliverables] Concrete Specifications & User Confirmation Gate
 │   ├── 01_AI_AGENT_HARNESS_SPEC.md      # AI Agent Godot 4 Development & Verification Harness Spec
 │   ├── 02_GAME_DESIGN_DOCUMENT.md       # Complete Three Kingdoms × RimWorld Shared-World Idle GDD

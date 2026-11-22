@@ -568,3 +568,60 @@ func test_headless_server_malformed_cli_flags_preserve_safe_defaults() -> void:
 	hsm.configure(opts_oor)
 	assert_eq(hsm.port, 9090, "Out-of-range ports 0 and 70000 preserve default port 9090")
 
+
+func test_web_export_preset_and_project_rendering_config() -> void:
+	assert_true(FileAccess.file_exists("res://export_presets.cfg"), "export_presets.cfg exists at project root")
+	var presets: ConfigFile = ConfigFile.new()
+	var load_err: Error = presets.load("res://export_presets.cfg")
+	assert_eq(load_err, OK, "export_presets.cfg parses cleanly via ConfigFile")
+	assert_eq(str(presets.get_value("preset.0", "name", "")), "Web", "preset.0 name is Web")
+	assert_eq(str(presets.get_value("preset.0", "platform", "")), "Web", "preset.0 platform is Web")
+	assert_true(_as_bool(presets.get_value("preset.0", "runnable", false)), "Web preset is runnable")
+	assert_eq(str(presets.get_value("preset.0", "export_filter", "")), "all_resources", "Web preset exports all_resources")
+	assert_eq(str(presets.get_value("preset.0", "export_path", "")), "build/web/index.html", "Web preset exports to build/web/index.html")
+	assert_false(_as_bool(presets.get_value("preset.0.options", "variant/thread_support", true), true), "Web preset disables thread_support for GitHub Pages compatibility")
+	assert_true(_as_bool(presets.get_value("preset.0.options", "vram_texture_compression/for_desktop", false)), "Web preset enables desktop VRAM texture compression")
+	var head_inc: String = str(presets.get_value("preset.0.options", "html/head_include", ""))
+	assert_contains(head_inc, "coi-serviceworker.js", "Web preset head_include references coi-serviceworker.js")
+
+	var proj_cfg: ConfigFile = ConfigFile.new()
+	var proj_err: Error = proj_cfg.load("res://project.godot")
+	assert_eq(proj_err, OK, "project.godot parses cleanly via ConfigFile")
+	assert_eq(
+		str(proj_cfg.get_value("rendering", "renderer/rendering_method.web", "")),
+		"gl_compatibility",
+		"project.godot sets Web renderer to gl_compatibility"
+	)
+
+
+func test_web_cjk_font_and_github_pages_workflow_present() -> void:
+	assert_true(FileAccess.file_exists("res://web/coi-serviceworker.js"), "web/coi-serviceworker.js exists")
+	var sw_file: FileAccess = FileAccess.open("res://web/coi-serviceworker.js", FileAccess.READ)
+	assert_not_null(sw_file, "Opened web/coi-serviceworker.js")
+	if sw_file != null:
+		var sw_text: String = sw_file.get_as_text()
+		sw_file.close()
+		assert_contains(sw_text, "coi-serviceworker", "coi-serviceworker.js contains valid service worker header")
+
+	assert_true(FileAccess.file_exists("res://.github/workflows/deploy-pages.yml"), ".github/workflows/deploy-pages.yml exists")
+	var wf_file: FileAccess = FileAccess.open("res://.github/workflows/deploy-pages.yml", FileAccess.READ)
+	assert_not_null(wf_file, "Opened deploy-pages.yml")
+	if wf_file != null:
+		var wf_text: String = wf_file.get_as_text()
+		wf_file.close()
+		assert_contains(wf_text, "4.4.1-stable", "deploy-pages.yml pins Godot 4.4.1-stable")
+		assert_contains(wf_text, "--export-release \"Web\" build/web/index.html", "deploy-pages.yml exports Web preset")
+		assert_contains(wf_text, "actions/configure-pages@v5", "deploy-pages.yml configures GitHub Pages")
+		assert_contains(wf_text, "actions/upload-pages-artifact@v3", "deploy-pages.yml uploads Pages artifact")
+		assert_contains(wf_text, "actions/deploy-pages@v4", "deploy-pages.yml deploys to GitHub Pages")
+
+	assert_true(FileAccess.file_exists("res://assets/fonts/NotoSansKR-Subset.otf"), "Bundled Korean CJK font exists for Web WASM")
+	assert_true(FileAccess.file_exists("res://assets/fonts/OFL.txt"), "Bundled OFL.txt license file exists")
+	var reg: AssetRegistry = AssetRegistry.new()
+	var ui_font: Font = reg.get_ui_font()
+	assert_not_null(ui_font, "AssetRegistry.get_ui_font() returns valid Font")
+	var audio_mgr: AudioManager = AudioManager.new()
+	assert_gte(audio_mgr.get_loaded_sfx_count(), 16, "AudioManager preloads all 16 SFX streams via ResourceLoader")
+	assert_gte(audio_mgr.get_loaded_bgm_count(), 1, "AudioManager preloads BGM stream via ResourceLoader")
+	audio_mgr.free()
+

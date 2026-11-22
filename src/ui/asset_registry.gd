@@ -13,6 +13,7 @@ const PANEL_BORDER_SLATE: String = "res://assets/graphics/ui/panel_border_010.pn
 const EMOTE_COMBAT: String = "res://assets/graphics/emotes/emote_combat.png"
 const EMOTE_ALERT: String = "res://assets/graphics/emotes/emote_exclamations.png"
 const EMOTE_QUESTION: String = "res://assets/graphics/emotes/emote_question.png"
+const UI_FONT_PATH: String = "res://assets/fonts/NotoSansKR-Subset.otf"
 
 const TILE_SIZE: int = 16
 const TILE_SPACING: int = 1
@@ -35,9 +36,29 @@ var _cached_theme: Theme = null
 var _cached_font: Font = null
 
 
+func _load_bundled_ui_font() -> FontFile:
+	if ResourceLoader.exists(UI_FONT_PATH):
+		var loaded: Resource = ResourceLoader.load(UI_FONT_PATH)
+		if loaded is FontFile:
+			var font_res: FontFile = loaded
+			return font_res
+	if FileAccess.file_exists(UI_FONT_PATH):
+		var ff: FontFile = FontFile.new()
+		var abs_path: String = ProjectSettings.globalize_path(UI_FONT_PATH)
+		var err: Error = ff.load_dynamic_font(abs_path)
+		if err == OK:
+			return ff
+	return null
+
+
 func get_ui_font() -> Font:
 	if _cached_font != null:
 		return _cached_font
+	var bundled_font: FontFile = _load_bundled_ui_font()
+	if OS.has_feature("web") and bundled_font != null:
+		_cached_font = bundled_font
+		return _cached_font
+
 	var sys_font: SystemFont = SystemFont.new()
 	sys_font.font_names = PackedStringArray([
 		"Noto Sans CJK KR",
@@ -47,6 +68,8 @@ func get_ui_font() -> Font:
 		"DejaVu Sans"
 	])
 	sys_font.multichannel_signed_distance_field = false
+	if bundled_font != null:
+		sys_font.fallbacks = [bundled_font]
 	_cached_font = sys_font
 	return _cached_font
 

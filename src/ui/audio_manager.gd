@@ -108,20 +108,6 @@ func _load_manifest_maps() -> void:
 func _load_audio_stream(res_path: String, enable_loop: bool) -> AudioStream:
 	if res_path.is_empty():
 		return null
-	var lower: String = res_path.to_lower()
-	var abs_path: String = ProjectSettings.globalize_path(res_path)
-
-	if lower.ends_with(".ogg"):
-		var ogg: AudioStreamOggVorbis = AudioStreamOggVorbis.load_from_file(abs_path)
-		if ogg != null:
-			ogg.loop = enable_loop
-			return ogg
-	elif lower.ends_with(".wav"):
-		var wav: AudioStreamWAV = AudioStreamWAV.load_from_file(abs_path)
-		if wav != null:
-			if enable_loop:
-				wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
-			return wav
 
 	if ResourceLoader.exists(res_path):
 		var loaded: Resource = ResourceLoader.load(res_path)
@@ -134,6 +120,23 @@ func _load_audio_stream(res_path: String, enable_loop: bool) -> AudioStream:
 				var wav_res: AudioStreamWAV = stream
 				wav_res.loop_mode = AudioStreamWAV.LOOP_FORWARD
 			return stream
+
+	var lower: String = res_path.to_lower()
+	var abs_path: String = ProjectSettings.globalize_path(res_path)
+	if not FileAccess.file_exists(abs_path):
+		return null
+
+	if lower.ends_with(".ogg"):
+		var ogg: AudioStreamOggVorbis = AudioStreamOggVorbis.load_from_file(abs_path)
+		if ogg != null:
+			ogg.loop = enable_loop
+			return ogg
+	elif lower.ends_with(".wav"):
+		var wav: AudioStreamWAV = AudioStreamWAV.load_from_file(abs_path)
+		if wav != null:
+			if enable_loop:
+				wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
+			return wav
 	return null
 
 

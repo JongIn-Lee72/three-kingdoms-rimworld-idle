@@ -25,3 +25,7 @@ gdscript/warnings/unsafe_method_access=2
 gdscript/warnings/unsafe_cast=2
 gdscript/warnings/unsafe_call_argument=2
 gdscript/warnings/return_value_discarded=1
+
+[rendering]
+
+renderer/rendering_method.web="gl_compatibility"

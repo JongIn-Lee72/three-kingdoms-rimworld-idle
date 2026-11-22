@@ -1,0 +1,107 @@
+name: Deploy Playable Web Demo to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache Godot 4.4.1 Linux binary
+        id: cache-godot-bin
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/bin
+          key: godot-4.4.1-stable-linux-x86_64-v1
+
+      - name: Install Godot 4.4.1-stable Linux binary
+        if: steps.cache-godot-bin.outputs.cache-hit != 'true'
+        run: bash scripts/setup_godot.sh
+
+      - name: Add Godot binary to PATH
+        run: echo "${HOME}/.local/bin" >> "${GITHUB_PATH}"
+
+      - name: Cache Godot 4.4.1 Web export templates
+        id: cache-godot-templates
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/godot/export_templates/4.4.1.stable
+          key: godot-4.4.1-stable-web-templates-v1
+
+      - name: Install Godot 4.4.1-stable Web export templates
+        if: steps.cache-godot-templates.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          TPZ_URL="https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz"
+          TMP_TPZ="$(mktemp /tmp/godot_templates.XXXXXX.tpz)"
+          TMP_EXTRACT="$(mktemp -d /tmp/godot_tpl_extract.XXXXXX)"
+          curl -fsSL --retry 3 --retry-delay 2 "${TPZ_URL}" -o "${TMP_TPZ}"
+          unzip -q "${TMP_TPZ}" \
+            "templates/version.txt" \
+            "templates/web_nothreads_release.zip" \
+            "templates/web_nothreads_debug.zip" \
+            "templates/web_release.zip" \
+            "templates/web_debug.zip" \
+            -d "${TMP_EXTRACT}"
+          DEST="${HOME}/.local/share/godot/export_templates/4.4.1.stable"
+          mkdir -p "${DEST}"
+          mv "${TMP_EXTRACT}/templates/"* "${DEST}/"
+          rm -rf "${TMP_TPZ}" "${TMP_EXTRACT}"
+          ls -lh "${DEST}"
+
+      - name: Import project resources
+        run: godot --headless --path . --import --quit
+
+      - name: Export Godot 4.4.1 Web (HTML5/WASM) release build
+        run: |
+          set -euo pipefail
+          mkdir -p build/web
+          touch build/.gdignore
+          godot --headless --path . --export-release "Web" build/web/index.html
+          cp web/coi-serviceworker.js build/web/coi-serviceworker.js
+          touch build/web/.nojekyll
+
+      - name: Verify Web export artifacts
+        run: |
+          set -euo pipefail
+          for f in index.html index.js index.wasm index.pck coi-serviceworker.js .nojekyll; do
+            test -f "build/web/${f}"
+          done
+          for f in index.html index.js index.wasm index.pck coi-serviceworker.js; do
+            test -s "build/web/${f}"
+          done
+          ls -lh build/web/
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
