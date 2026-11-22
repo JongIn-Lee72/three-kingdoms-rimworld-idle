@@ -32,6 +32,23 @@ var _texture_cache: Dictionary = {}
 var _atlas_cache: Dictionary = {}
 var _stylebox_cache: Dictionary = {}
 var _cached_theme: Theme = null
+var _cached_font: Font = null
+
+
+func get_ui_font() -> Font:
+	if _cached_font != null:
+		return _cached_font
+	var sys_font: SystemFont = SystemFont.new()
+	sys_font.font_names = PackedStringArray([
+		"Noto Sans CJK KR",
+		"Malgun Gothic",
+		"Apple SD Gothic Neo",
+		"NanumGothic",
+		"DejaVu Sans"
+	])
+	sys_font.multichannel_signed_distance_field = false
+	_cached_font = sys_font
+	return _cached_font
 
 
 func _load_texture(res_path: String) -> Texture2D:
@@ -252,6 +269,9 @@ func build_three_kingdoms_theme() -> Theme:
 		return _cached_theme
 
 	var theme: Theme = Theme.new()
+	var ui_font: Font = get_ui_font()
+	if ui_font != null:
+		theme.default_font = ui_font
 
 	var panel_sb: StyleBoxTexture = build_panel_stylebox(true)
 	var slate_sb: StyleBoxTexture = build_panel_stylebox(false)

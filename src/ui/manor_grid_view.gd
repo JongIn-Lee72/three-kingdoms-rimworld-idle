@@ -460,3 +460,37 @@ func get_building_level_displayed(building_id: String) -> int:
 		var bld: Dictionary = bld_v
 		return _to_int(bld.get(building_id, 1), 1)
 	return 1
+
+
+func reset_view_state() -> void:
+	_last_snapshot.clear()
+	if _header_label != null:
+		_header_label.text = "장원 그리드 뷰 (32x32) | LOD 1 | 대기 중"
+	if _resources_label != null:
+		_resources_label.text = "자원: GRAIN 0 | COIN 0 | WOOD 0 | IRON 0 | HORSES 0 | HERBS_WINE 0 | WEAPONS 0 | MERIT_PRESTIGE 0"
+	for rk: String in DtoSchemas.RESOURCE_KEYS:
+		var rlbl_v: Variant = _resource_icon_labels.get(rk, null)
+		if rlbl_v is Label:
+			var rlbl: Label = rlbl_v
+			rlbl.text = "%s:0" % rk
+	if _grid_summary_label != null:
+		_grid_summary_label.text = "32x32 논리 격자 (1024 타일): 구역 분포 대기"
+	if _zones_label != null:
+		_zones_label.text = "8대 구역 요약: -"
+	for bid: String in ManorState.BUILDING_IDS:
+		var entry_v: Variant = _upgrade_buttons.get(bid, null)
+		if entry_v is Dictionary:
+			var entry: Dictionary = entry_v
+			var lbl_v: Variant = entry.get("label", null)
+			if lbl_v is Label:
+				var lbl: Label = lbl_v
+				lbl.text = "%s: Lv.1" % bid
+			var btn_v: Variant = entry.get("button", null)
+			if btn_v is Button:
+				var btn: Button = btn_v
+				btn.disabled = false
+	if _pawns_box != null:
+		for child: Node in _pawns_box.get_children():
+			child.queue_free()
+	if _grid_canvas != null:
+		_grid_canvas.queue_redraw()

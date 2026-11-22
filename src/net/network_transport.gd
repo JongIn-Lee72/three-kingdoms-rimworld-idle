@@ -301,6 +301,12 @@ func is_ws_client_open() -> bool:
 	return _ws_client_peer != null and _ws_client_peer.get_ready_state() == WebSocketPeer.STATE_OPEN
 
 
+func get_ws_client_ready_state() -> int:
+	if _ws_client_peer == null:
+		return WebSocketPeer.STATE_CLOSED
+	return _ws_client_peer.get_ready_state()
+
+
 func poll() -> void:
 	if mode == MODE_WEBSOCKET:
 		if _tcp_server != null and _tcp_server.is_listening():

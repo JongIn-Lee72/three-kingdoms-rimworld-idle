@@ -402,3 +402,32 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 		_select_option_by_text(_duel_opt, str(_current_doctrine.get("duel_policy", "ACCEPT_IF_ADVANTAGE")))
 		_select_option_by_text(_stratagem_opt, str(_current_doctrine.get("stratagem_policy", "FIRE_OR_FLOOD")))
 		_select_option_by_text(_prisoner_opt, str(_current_doctrine.get("prisoner_policy", "RECRUIT_PERSUADE")))
+
+
+func reset_view_state() -> void:
+	_pawns_cache.clear()
+	_selected_pawn_id = ""
+	if _pawn_selector != null:
+		_pawn_selector.clear()
+	for dom: String in PawnEntity.WORK_DOMAINS:
+		_update_priority_button_visuals(dom, 2)
+	_current_schedule = [
+		"SLEEP", "SLEEP", "SLEEP", "DRILL",
+		"WORK", "WORK", "WORK", "WORK",
+		"WORK", "RECREATION", "ANYTHING", "SLEEP"
+	]
+	for si: int in range(mini(12, _schedule_selectors.size())):
+		var idx: int = PawnEntity.SHICHEN_ACTIVITIES.find(_current_schedule[si])
+		if idx >= 0:
+			_schedule_selectors[si].select(idx)
+	_current_doctrine = ManorState.DEFAULT_DOCTRINE.duplicate(true)
+	if _stance_opt != null:
+		_select_option_by_text(_stance_opt, str(_current_doctrine.get("engagement_stance", "DEFENSIVE_HOLD")))
+	if _formation_opt != null:
+		_select_option_by_text(_formation_opt, str(_current_doctrine.get("formation", "SQUARE_SHIELD")))
+	if _duel_opt != null:
+		_select_option_by_text(_duel_opt, str(_current_doctrine.get("duel_policy", "ACCEPT_IF_ADVANTAGE")))
+	if _stratagem_opt != null:
+		_select_option_by_text(_stratagem_opt, str(_current_doctrine.get("stratagem_policy", "FIRE_OR_FLOOD")))
+	if _prisoner_opt != null:
+		_select_option_by_text(_prisoner_opt, str(_current_doctrine.get("prisoner_policy", "RECRUIT_PERSUADE")))

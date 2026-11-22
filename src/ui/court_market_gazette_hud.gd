@@ -602,3 +602,37 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 
 func is_gazette_visible() -> bool:
 	return _gazette_panel != null and _gazette_panel.visible
+
+
+func reset_view_state() -> void:
+	_cached_orders.clear()
+	_cached_prices.clear()
+	_cached_inbox.clear()
+	_last_gazette.clear()
+	_last_challenge.clear()
+	if _court_label != null:
+		_court_label.text = "세력: 무소속 | 신분: FREE_OFFICER | 품계: NONE | 작위: GOVERNOR_INSPECTOR"
+	if _market_prices_label != null:
+		_market_prices_label.text = "시세: GRAIN 1000bp | IRON 2000bp | WOOD 1500bp"
+	if _members_box != null:
+		for ch_m: Node in _members_box.get_children():
+			ch_m.queue_free()
+	if _orders_box != null:
+		for ch_o: Node in _orders_box.get_children():
+			ch_o.queue_free()
+	if _inbox_box != null:
+		for ch_i: Node in _inbox_box.get_children():
+			ch_i.queue_free()
+	if _hegemony_box != null:
+		for ch_h: Node in _hegemony_box.get_children():
+			ch_h.queue_free()
+	if _gazette_label != null:
+		_gazette_label.text = "조보 내역 없음"
+	if _gazette_panel != null:
+		_gazette_panel.visible = false
+	if _cc_challenge_label != null:
+		_cc_challenge_label.text = "챌린지 상태: 미발급"
+	if _cc_prompt_display != null:
+		_cc_prompt_display.text = "외부 AI 프롬프트가 이곳에 읽기 전용으로 표시됩니다."
+	if _cc_preview_status_label != null:
+		_cc_preview_status_label.text = "토큰 검증 대기"

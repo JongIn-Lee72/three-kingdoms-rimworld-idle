@@ -9,7 +9,7 @@
 - **3계층 코드 우선(Code-First) Godot 4 구조**:
   - **Layer 1 (`src/core/`, `src/micro/`, `src/macro/`, `src/faction/`, `src/net/`, `src/persistence/`)**: 순수 `RefCounted` 기반 헤드리스 결정론적 정수(`int64` permille/bp) 시뮬레이션 + `SplitMix64` 무상태 난수(`DeterministicRNG`) + `CRC32`/`SHA-256` 상태 해싱.
   - **Layer 2 (`data/`, `assets/`)**: 순수 UTF-8 JSON 데이터 8종(CC0 에셋 매니페스트 `data/assets_manifest.json` 포함) 및 10테이블 SQLite 스키마(`data/schemas/world_state_schema.sql`), `itch.io` / `Kenney.nl` / `OpenGameArt.org`에서 리서치·확보한 **100% CC0 1.0 그래픽·사운드 에셋 33종**(`assets/ASSETS_ATTRIBUTION.md`), 바이너리 `.tres` 0건.
-  - **Layer 3 (`src/ui/`, `scenes/`)**: 30줄 미만의 최소 부트스트랩 씬(`main_client.tscn`, `headless_server.tscn`) + 프로그래밍 방식 4대 통합 UI 뷰(2D `32×32` Kenney 타일맵 장원 캔버스, OpenGameArt CC0 양피지 천하 전략도 캔버스, Kenney 9-Slice 테마, `AssetRegistry` & `AudioManager` 동양풍 BGM/16종 SFX).
+  - **Layer 3 (`src/ui/`, `scenes/`)**: 30줄 미만의 최소 부트스트랩 씬(`main_client.tscn`, `headless_server.tscn`) + 프로그래밍 방식 4대 통합 UI 뷰(2D `32×32` Kenney 타일맵 장원 캔버스, OpenGameArt CC0 양피지 천하 전략도 캔버스, Kenney 9-Slice 테마, `AssetRegistry` & `AudioManager` 동양풍 BGM/16종 SFX, `LiveSessionDriver` 실시간 로컬 시연/원격 WebSocket 세션 드라이버).
 - **2계층 결합 시뮬레이션 (`Micro LOD 0/1` ↔ `Macro Graph G=(V,E)`)**:
   - 개인 장원(`32×32`, 8구역, 10시설, 5대 능력치·열정 불꽃, 5대 욕구, 10대 기질, 심리 붕괴/심기일전/영웅적 각성, 비상 지하창고 및 오프라인 불사 보호).
   - 삼국지 9주 15거점 22간선 전략도, 랜체스터 $N^{0.85}$ 자동 전투·5합 일기토·계략/기후, 지역 지정가 거래소 + AMM, 천명 감독관 스토리텔러(`사마천/동탁/문경지치`).
@@ -18,6 +18,37 @@
   - 선택지 서사 인터뷰(`천명 문답`) + 외부 AI 페르소나 봉인 토큰(`TK3K2`: 세션별 `HMAC-SHA256` Fisher-Yates 치환표 + Base-31 + Fletcher-31 체크섬, 평문 JSON 차단, `R0..R3` 조작 탐지, 고정 예산 `320` 정규화).
 - **권위 서버·6단계 안티치트 & 하이브리드 WAL + SQLite 영속성**:
   - `Loopback` / `WebSocket` / `ENet` 플러그형 트랜스포트, 4채널 관심 영역 델타 압축, 6단계 명령 검증 및 토큰 버킷 속도 제한, JSONL WAL + 원자적 스냅샷 + 10테이블 `/usr/bin/sqlite3` 동기화(`PRAGMA foreign_keys = ON;`).
+
+---
+
+## 즉시 플레이 (`F5` 로컬 시연) 및 전용 멀티플레이 서버
+
+### 1. Godot `F5` 로컬 즉시 플레이 (`scenes/main_client.tscn`)
+1. 저장소를 클론한 뒤 Godot 4.4.1 에디터에서 `project.godot`을 열고 **`F5`**(또는 `godot --path . scenes/main_client.tscn`)를 실행합니다.
+2. **로컬 시연 모드(`LiveSessionDriver`)**가 자동으로 부팅되어 플레이어(`player_01` · 허창 `한실 신흥군`)와 자율 AI 경쟁/동맹 군주 2명(`lord_wei` · 하비 `위(魏) 조조군`, `ally_shu` · 성도 `촉(蜀) 유비군`)이 실제 `AuthoritativeServer` + `LoopbackMemoryTransport` 위에서 즉시 동작합니다.
+3. 상단 세션 바에서 **일시정지 / 재개**, 배속 전환(**`1x` / `2x` / `5x`**), 명령 영수증(`MSG_CMD_RECEIPT`) 피드백을 바로 제어할 수 있으며, 매 매크로 틱마다 AI 군주들의 지역 거래소 호가 체결 및 상단/군단 출진이 천하 전략도(`3번 탭`)와 정청/거래소(`4번 탭`)에 실시간 반영됩니다.
+
+### 2. 전용 상시 헤드리스 서버 호스팅 (`scenes/headless_server.tscn`)
+```bash
+export PATH="${HOME}/.local/bin:${PATH}"
+
+# 기본 설정(포트 9090, 1초 틱, WAL + 원자적 스냅샷 + SQLite 자동 체크포인트)으로 서버 기동
+godot --headless --path . scenes/headless_server.tscn -- \
+  --port=9090 \
+  --bind=127.0.0.1 \
+  --db=saves/world_state.db \
+  --wal=saves/wal_commands.jsonl \
+  --snapshot=saves/world_snapshot.json \
+  --seed=18401 \
+  --tick-sec=1.0 \
+  --snapshot-interval=24
+```
+- 종료 시(`SIGTERM` / 창 닫기) 최종 원자적 스냅샷과 10테이블 SQLite 체크포인트를 자동 플러시하며, 재기동 시 기존 스냅샷 + WAL을 자동 복구합니다.
+
+### 3. 원격 WebSocket 멀티플레이 접속
+1. 위 헤드리스 서버를 먼저 실행한 뒤, `F5`로 실행한 클라이언트 상단 우측의 **WebSocket 접속 바**에 `ws://127.0.0.1:9090` (또는 원격 호스트 주소)을 입력하고 **`서버 접속`** 버튼을 누릅니다.
+2. 연결이 열리면 클라이언트가 초기 채널 구독 핸드셰이크를 전송하여 서버에 피어를 자동 등록하고, 실시간 `MSG_TICK_DELTA` / `MSG_CMD_RECEIPT` / 재접속 `MSG_OFFLINE_CHRONICLE_DIGEST`(조보) / `MSG_PERSONA_CHALLENGE`를 송수신합니다.
+3. **`로컬 시연`** 버튼을 누르면 언제든 임베디드 로컬 시연 모드로 전환할 수 있습니다.
 
 ---
 
@@ -35,7 +66,7 @@ python3 scripts/harness/verify_blueprint.py
 bash scripts/harness/check_syntax.sh
 godot --headless --path . -s res://tools/harness/validate_data.gd -- --strict --require-all
 
-# 4. Stage 2: 헤드리스 유닛 & 통합 테스트 스위트 (113 tests / 5,054 assertions)
+# 4. Stage 2: 헤드리스 유닛 & 통합 테스트 스위트
 bash scripts/harness/run_tests.sh
 
 # 5. Stage 3: 10,000틱 결정론 리플레이 & LOD 0/1 오프라인 동치성 검증

@@ -25,6 +25,13 @@ var _rally_id_edit: LineEdit = null
 var _cached_nodes: Dictionary = {}
 var _cached_armies: Dictionary = {}
 var _cached_rallies: Dictionary = {}
+var _world_graph: WorldGraph = null
+var _host_node_id: String = "xuchang"
+
+
+func set_host_node_id(node_id: String) -> void:
+	if not node_id.is_empty():
+		_host_node_id = node_id
 
 
 static func _to_int(v: Variant, fallback: int = 0) -> int:
@@ -266,10 +273,10 @@ func _build_ui() -> void:
 
 
 func _load_default_nodes_preview() -> void:
-	var wg: WorldGraph = WorldGraph.new({}, true)
+	_world_graph = WorldGraph.new({}, true)
 	var init_nodes: Dictionary = {}
-	for nid: String in wg.get_node_ids():
-		init_nodes[nid] = wg.get_node(nid)
+	for nid: String in _world_graph.get_node_ids():
+		init_nodes[nid] = _world_graph.get_node(nid)
 	apply_snapshot({"nodes": init_nodes})
 
 
@@ -326,7 +333,9 @@ func _on_map_canvas_draw() -> void:
 			node_ids.append(cks)
 	node_ids.sort()
 
-	var font: Font = ThemeDB.fallback_font
+	var font: Font = _assets.get_ui_font() if _assets != null else ThemeDB.fallback_font
+	if font == null:
+		font = ThemeDB.fallback_font
 	for nid: String in node_ids:
 		var nd: Dictionary = _cached_nodes[nid] if _cached_nodes.has(nid) and _cached_nodes[nid] is Dictionary else {}
 		var st: Dictionary = _static_nodes[nid] if _static_nodes.has(nid) and _static_nodes[nid] is Dictionary else {}
@@ -395,10 +404,18 @@ func _on_dispatch_pressed() -> void:
 		target_nid = _target_node_opt.get_item_text(_target_node_opt.selected)
 	var unit_t: String = _unit_type_opt.get_item_text(_unit_type_opt.selected) if _unit_type_opt.selected >= 0 else "ARMY"
 	var edges: Array[String] = []
-	for part: String in _edge_path_edit.text.split(",", false):
-		var clean_e: String = part.strip_edges()
-		if not clean_e.is_empty():
-			edges.append(clean_e)
+	var raw_path: String = _edge_path_edit.text.strip_edges()
+	if raw_path.is_empty() and _world_graph != null and not target_nid.is_empty():
+		var auto_path: Array[String] = _world_graph.find_path(_host_node_id, target_nid)
+		for eid: String in auto_path:
+			edges.append(eid)
+		if not edges.is_empty():
+			_edge_path_edit.text = ",".join(PackedStringArray(edges))
+	else:
+		for part: String in raw_path.split(",", false):
+			var clean_e: String = part.strip_edges()
+			if not clean_e.is_empty():
+				edges.append(clean_e)
 	emit_dispatch_expedition(
 		target_nid,
 		edges,
@@ -590,3 +607,17 @@ func _redraw_lists() -> void:
 
 func get_node_count() -> int:
 	return _cached_nodes.size()
+
+
+func reset_view_state() -> void:
+	_cached_nodes.clear()
+	_cached_armies.clear()
+	_cached_rallies.clear()
+	_host_node_id = "xuchang"
+	if _edge_path_edit != null:
+		_edge_path_edit.text = ""
+	if _rally_id_edit != null:
+		_rally_id_edit.text = ""
+	_load_default_nodes_preview()
+	if _map_canvas != null:
+		_map_canvas.queue_redraw()
