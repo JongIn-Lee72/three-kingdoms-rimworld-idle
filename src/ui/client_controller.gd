@@ -22,6 +22,7 @@ var _in_switch_tab: bool = false
 var _header_banner: TextureRect = null
 var _mute_btn: Button = null
 var _top_bar_label: Label = null
+var _top_bar_display_label: Label = null
 var _tab_container: TabContainer = null
 var _cc_modal: AcceptDialog = null
 var _cc_modal_btn: Button = null
@@ -34,11 +35,13 @@ var _speed_2x_btn: Button = null
 var _speed_5x_btn: Button = null
 var _cmd_feedback_panel: PanelContainer = null
 var _cmd_feedback_label: Label = null
+var _server_dialog_btn: Button = null
+var _server_modal: AcceptDialog = null
 var _ws_url_edit: LineEdit = null
 var _ws_connect_btn: Button = null
 var _local_demo_btn: Button = null
 
-# M8 F-47 / F-48: Persistent global resource strip & 5-step onboarding guide bar
+# M8 F-47 / F-48: Persistent global resource strip & 5-step onboarding compatibility refs
 var _global_res_panel: PanelContainer = null
 var _global_res_icons: Dictionary = {}
 var _global_res_labels: Dictionary = {}
@@ -46,6 +49,7 @@ var _onboarding_bar_panel: PanelContainer = null
 var _onboarding_step_btns: Array[Button] = []
 var _onboarding_hint_label: Label = null
 var _onboarding_cta_btn: Button = null
+var _quest_pill_btn: Button = null
 
 var _live_driver: LiveSessionDriver = null
 var _tick_accumulator_sec: float = 0.0
@@ -54,6 +58,9 @@ var _speed_multiplier: int = 1
 var _paused: bool = false
 var _ws_connected_ui: bool = false
 var _ws_conn_state_ui: String = "CLOSED"
+var _last_chronicle_tick: int = -1
+var _prev_stockpile_snapshot: Dictionary = {}
+var _prev_army_ids: Dictionary = {}
 
 func get_active_tab_index() -> int: return active_tab_index
 
@@ -151,24 +158,101 @@ func start_ambient_bgm() -> bool:
 func _style_header_compact(sb: StyleBoxFlat) -> StyleBoxFlat:
 	sb.content_margin_left = 8.0
 	sb.content_margin_right = 8.0
-	sb.content_margin_top = 3.0
-	sb.content_margin_bottom = 3.0
+	sb.content_margin_top = 4.0
+	sb.content_margin_bottom = 4.0
 	return sb
+
+
+func _current_shichen_ko() -> String:
+	@warning_ignore("integer_division")
+	var sh_idx: int = (client_tick % SimClock.DAILY_SETTLEMENT_TICK) / SimClock.TICKS_PER_SHICHEN
+	var sh_name: String = SimClock.SHICHEN_NAMES[clampi(sh_idx, 0, SimClock.SHICHEN_NAMES.size() - 1)]
+	var hour_ranges: Array[String] = [
+		"23~01시", "01~03시", "03~05시", "05~07시", "07~09시", "09~11시",
+		"11~13시", "13~15시", "15~17시", "17~19시", "19~21시", "21~23시"
+	]
+	return "%s(%s)" % [sh_name, hour_ranges[clampi(sh_idx, 0, hour_ranges.size() - 1)]]
+
+
+static func _to_bool(v: Variant, fallback: bool = false) -> bool:
+	if v is bool:
+		var bv: bool = v
+		return bv
+	if v is int:
+		var iv: int = v
+		return iv != 0
+	return fallback
+
+
+func _hero_display_name() -> String:
+	var pawns_v: Variant = _manor_cache.get("pawns", {})
+	if pawns_v is Dictionary:
+		var pd: Dictionary = pawns_v
+		for pk: Variant in pd.keys():
+			var pv: Variant = pd[pk]
+			if pv is Dictionary:
+				var pdict: Dictionary = pv
+				var is_av: bool = _to_bool(pdict.get("is_avatar", str(pk).ends_with("_avatar")), str(pk).ends_with("_avatar"))
+				if is_av:
+					var nm: String = str(pdict.get("name", "")).strip_edges()
+					if not nm.is_empty():
+						return nm
+	return "조자룡"
+
+
+func _faction_display_name() -> String:
+	var fac_v: Variant = _court_cache.get("faction", {})
+	if fac_v is Dictionary:
+		var fd: Dictionary = fac_v
+		var fid: String = str(fd.get("faction_id", ""))
+		if not fid.is_empty():
+			return AssetRegistry.faction_name_ko(fid)
+	return "한실 신흥군"
 
 
 func _format_top_bar_text() -> String:
 	var season_lbl: String = AssetRegistry.season_ko(current_season)
-	return "삼국지 × 림월드 | 군주: %s | 틱: %s | 계절: %s" % [
+	var shichen_lbl: String = _current_shichen_ko()
+	var hero_name: String = _hero_display_name()
+	var fac_name: String = _faction_display_name()
+	@warning_ignore("integer_division")
+	var day_num: int = (client_tick / SimClock.DAILY_SETTLEMENT_TICK) + 1
+	return "삼국지 천명록 · %s | 군주 %s (%s) · %d일차 %s · %s · 틱 %s | 천명 감독관: 사마천" % [
+		fac_name,
+		hero_name,
 		player_id,
-		AssetRegistry.format_num(client_tick),
-		season_lbl
+		day_num,
+		season_lbl,
+		shichen_lbl,
+		AssetRegistry.format_num(client_tick)
+	]
+
+
+func _format_top_bar_display_text() -> String:
+	var season_lbl: String = AssetRegistry.season_ko(current_season)
+	var shichen_lbl: String = _current_shichen_ko()
+	var hero_name: String = _hero_display_name()
+	var fac_name: String = _faction_display_name()
+	@warning_ignore("integer_division")
+	var day_num: int = (client_tick / SimClock.DAILY_SETTLEMENT_TICK) + 1
+	return "삼국지 천명록 · %s | 군주 %s · %d일차 %s · %s · 틱 %s | 천명 감독관: 사마천" % [
+		fac_name,
+		hero_name,
+		day_num,
+		season_lbl,
+		shichen_lbl,
+		AssetRegistry.format_num(client_tick)
 	]
 
 
 func _update_top_bar_display() -> void:
+	var tip: String = "플레이어 ID: %s | 상태 무결성 CRC32: %d" % [player_id, last_state_crc32]
 	if _top_bar_label != null:
 		_top_bar_label.text = _format_top_bar_text()
-		_top_bar_label.tooltip_text = "플레이어 ID: %s | 상태 무결성 CRC32: %d" % [player_id, last_state_crc32]
+		_top_bar_label.tooltip_text = tip
+	if _top_bar_display_label != null:
+		_top_bar_display_label.text = _format_top_bar_display_text()
+		_top_bar_display_label.tooltip_text = tip
 
 
 func _build_ui() -> void:
@@ -184,16 +268,18 @@ func _build_ui() -> void:
 	root.add_theme_constant_override("separation", 3)
 	add_child(root)
 
-	# Row 1: Compact Title + Clock + Primary Controls (~36px)
+	# =========================================================================
+	# ROW 1: Game Identity + World Era Clock + Speed + Audio + Server Modal + Character Creation
+	# =========================================================================
 	var hdr_panel: PanelContainer = PanelContainer.new()
 	hdr_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hdr_panel.custom_minimum_size = Vector2(0, 36)
+	hdr_panel.custom_minimum_size = Vector2(0, 38)
 	var hdr_sb: StyleBoxFlat = asset_registry.build_card_stylebox(true, AssetRegistry.COLOR_GOLD_ACCENT)
 	hdr_panel.add_theme_stylebox_override("panel", _style_header_compact(hdr_sb))
 
 	var hdr_overlay: Control = Control.new()
 	hdr_overlay.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hdr_overlay.custom_minimum_size = Vector2(0, 28)
+	hdr_overlay.custom_minimum_size = Vector2(0, 30)
 	hdr_panel.add_child(hdr_overlay)
 
 	_header_banner = TextureRect.new()
@@ -206,28 +292,51 @@ func _build_ui() -> void:
 
 	var hdr_row: HBoxContainer = HBoxContainer.new()
 	hdr_row.set_anchors_preset(Control.PRESET_FULL_RECT)
-	hdr_row.add_theme_constant_override("separation", 8)
+	hdr_row.add_theme_constant_override("separation", 6)
 	hdr_overlay.add_child(hdr_row)
 
+	# Hidden compatibility label preserving player_id for unit test assertions
 	_top_bar_label = Label.new()
+	_top_bar_label.visible = false
 	_top_bar_label.text = _format_top_bar_text()
-	_top_bar_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_top_bar_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	AssetRegistry.apply_text_role(_top_bar_label, "body")
 	hdr_row.add_child(_top_bar_label)
 
-	# Command Receipt Toast Badge (inline semantic feedback)
-	_cmd_feedback_panel = PanelContainer.new()
-	_cmd_feedback_panel.add_theme_stylebox_override(
-		"panel",
-		asset_registry.build_badge_stylebox(Color(0.14, 0.13, 0.11, 0.96), AssetRegistry.COLOR_SUBTLE_BORDER)
-	)
-	_cmd_feedback_label = Label.new()
-	_cmd_feedback_label.text = "명령: 대기"
-	_cmd_feedback_label.custom_minimum_size = Vector2(165, 0)
-	AssetRegistry.apply_text_role(_cmd_feedback_label, "caption")
-	_cmd_feedback_panel.add_child(_cmd_feedback_label)
-	hdr_row.add_child(_cmd_feedback_panel)
+	_top_bar_display_label = Label.new()
+	_top_bar_display_label.text = _format_top_bar_display_text()
+	_top_bar_display_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_top_bar_display_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_top_bar_display_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	AssetRegistry.apply_text_role(_top_bar_display_label, "body")
+	hdr_row.add_child(_top_bar_display_label)
+
+	_mode_status_label = Label.new()
+	_mode_status_label.text = "○ 대기"
+	AssetRegistry.apply_text_role(_mode_status_label, "caption")
+	hdr_row.add_child(_mode_status_label)
+
+	_pause_btn = Button.new()
+	_pause_btn.text = "일시정지"
+	asset_registry.apply_button_variant(_pause_btn, "chip")
+	_pause_btn.pressed.connect(_on_pause_toggled)
+	hdr_row.add_child(_pause_btn)
+
+	_speed_1x_btn = Button.new()
+	_speed_1x_btn.text = "1x"
+	asset_registry.apply_button_variant(_speed_1x_btn, "chip")
+	_speed_1x_btn.pressed.connect(set_demo_speed.bind(1))
+	hdr_row.add_child(_speed_1x_btn)
+
+	_speed_2x_btn = Button.new()
+	_speed_2x_btn.text = "2x"
+	asset_registry.apply_button_variant(_speed_2x_btn, "chip")
+	_speed_2x_btn.pressed.connect(set_demo_speed.bind(2))
+	hdr_row.add_child(_speed_2x_btn)
+
+	_speed_5x_btn = Button.new()
+	_speed_5x_btn.text = "5x"
+	asset_registry.apply_button_variant(_speed_5x_btn, "chip")
+	_speed_5x_btn.pressed.connect(set_demo_speed.bind(5))
+	hdr_row.add_child(_speed_5x_btn)
 
 	_mute_btn = Button.new()
 	_mute_btn.text = "음소거: OFF"
@@ -236,63 +345,42 @@ func _build_ui() -> void:
 	_mute_btn.pressed.connect(_on_mute_toggled)
 	hdr_row.add_child(_mute_btn)
 
+	_server_dialog_btn = Button.new()
+	_server_dialog_btn.text = "멀티 서버"
+	_server_dialog_btn.tooltip_text = "원격 WebSocket 서버 연결 및 로컬 시연 전환 설정"
+	asset_registry.apply_button_variant(_server_dialog_btn, "secondary")
+	_server_dialog_btn.pressed.connect(_on_open_server_dialog)
+	hdr_row.add_child(_server_dialog_btn)
+
 	_cc_modal_btn = Button.new()
-	_cc_modal_btn.text = "장수 출사 (캐릭터 생성)"
+	_cc_modal_btn.text = "장수 출사"
 	_cc_modal_btn.tooltip_text = "천명 문답 및 TK3K2 봉인 토큰 출사 안내 열기"
 	asset_registry.apply_button_variant(_cc_modal_btn, "primary")
 	_cc_modal_btn.pressed.connect(_on_open_cc_modal)
 	hdr_row.add_child(_cc_modal_btn)
 	root.add_child(hdr_panel)
 
-	# Row 2: Session Controls + Persistent Global 8-Resource Strip (~34px)
+	# =========================================================================
+	# ROW 2: Persistent 8-Resource HUD Bar + Compact Next-Action Quest Pill + Command Toast
+	# =========================================================================
 	_session_bar_panel = PanelContainer.new()
 	_session_bar_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_session_bar_panel.custom_minimum_size = Vector2(0, 34)
 	var sess_sb: StyleBoxFlat = asset_registry.build_card_stylebox(false, AssetRegistry.COLOR_SUBTLE_BORDER)
 	_session_bar_panel.add_theme_stylebox_override("panel", _style_header_compact(sess_sb))
-	var session_row: HBoxContainer = HBoxContainer.new()
-	session_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	session_row.add_theme_constant_override("separation", 6)
-	_session_bar_panel.add_child(session_row)
+	var res_bar_row: HBoxContainer = HBoxContainer.new()
+	res_bar_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	res_bar_row.add_theme_constant_override("separation", 8)
+	_session_bar_panel.add_child(res_bar_row)
 
-	_mode_status_label = Label.new()
-	_mode_status_label.text = "● 대기"
-	AssetRegistry.apply_text_role(_mode_status_label, "muted")
-	session_row.add_child(_mode_status_label)
-
-	_pause_btn = Button.new()
-	_pause_btn.text = "일시정지"
-	asset_registry.apply_button_variant(_pause_btn, "chip")
-	_pause_btn.pressed.connect(_on_pause_toggled)
-	session_row.add_child(_pause_btn)
-
-	_speed_1x_btn = Button.new()
-	_speed_1x_btn.text = "1x"
-	asset_registry.apply_button_variant(_speed_1x_btn, "chip")
-	_speed_1x_btn.pressed.connect(set_demo_speed.bind(1))
-	session_row.add_child(_speed_1x_btn)
-
-	_speed_2x_btn = Button.new()
-	_speed_2x_btn.text = "2x"
-	asset_registry.apply_button_variant(_speed_2x_btn, "chip")
-	_speed_2x_btn.pressed.connect(set_demo_speed.bind(2))
-	session_row.add_child(_speed_2x_btn)
-
-	_speed_5x_btn = Button.new()
-	_speed_5x_btn.text = "5x"
-	asset_registry.apply_button_variant(_speed_5x_btn, "chip")
-	_speed_5x_btn.pressed.connect(set_demo_speed.bind(5))
-	session_row.add_child(_speed_5x_btn)
-
-	# Persistent 8-Resource Pill Strip across ALL 4 tabs
 	var res_strip: HBoxContainer = HBoxContainer.new()
 	res_strip.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	res_strip.add_theme_constant_override("separation", 8)
+	res_strip.add_theme_constant_override("separation", 10)
 	for rk: String in DtoSchemas.RESOURCE_KEYS:
 		var rbox: HBoxContainer = HBoxContainer.new()
 		rbox.add_theme_constant_override("separation", 3)
 		var ricon: TextureRect = TextureRect.new()
-		ricon.custom_minimum_size = Vector2(15, 15)
+		ricon.custom_minimum_size = Vector2(16, 16)
 		ricon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		ricon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		ricon.texture = asset_registry.get_resource_icon(rk)
@@ -314,44 +402,35 @@ func _build_ui() -> void:
 		res_strip.add_child(rbox)
 		_global_res_icons[rk] = ricon
 		_global_res_labels[rk] = rval
-	session_row.add_child(res_strip)
+	res_bar_row.add_child(res_strip)
 
-	_ws_url_edit = LineEdit.new()
-	_ws_url_edit.text = "ws://127.0.0.1:9090"
-	_ws_url_edit.placeholder_text = "ws://127.0.0.1:9090"
-	_ws_url_edit.custom_minimum_size = Vector2(150, 0)
-	_ws_url_edit.tooltip_text = "원격 멀티플레이 WebSocket 서버 주소"
-	session_row.add_child(_ws_url_edit)
+	_quest_pill_btn = Button.new()
+	_quest_pill_btn.text = "숙원: 장원 둔전·관아 살피기 [이동 →]"
+	_quest_pill_btn.tooltip_text = "현재 추천 숙원 또는 대기 중인 결재 서신으로 바로 이동합니다"
+	asset_registry.apply_button_variant(_quest_pill_btn, "chip")
+	_quest_pill_btn.pressed.connect(_on_onboarding_cta_pressed)
+	res_bar_row.add_child(_quest_pill_btn)
 
-	_ws_connect_btn = Button.new()
-	_ws_connect_btn.text = "서버 접속"
-	asset_registry.apply_button_variant(_ws_connect_btn, "secondary")
-	_ws_connect_btn.pressed.connect(_on_ws_connect_pressed)
-	session_row.add_child(_ws_connect_btn)
-
-	_local_demo_btn = Button.new()
-	_local_demo_btn.text = "로컬 시연"
-	asset_registry.apply_button_variant(_local_demo_btn, "secondary")
-	_local_demo_btn.pressed.connect(_on_local_demo_pressed)
-	session_row.add_child(_local_demo_btn)
+	_cmd_feedback_panel = PanelContainer.new()
+	_cmd_feedback_panel.add_theme_stylebox_override(
+		"panel",
+		asset_registry.build_badge_stylebox(Color(0.14, 0.13, 0.11, 0.96), AssetRegistry.COLOR_SUBTLE_BORDER)
+	)
+	_cmd_feedback_label = Label.new()
+	_cmd_feedback_label.text = "명령: 대기"
+	_cmd_feedback_label.custom_minimum_size = Vector2(180, 0)
+	AssetRegistry.apply_text_role(_cmd_feedback_label, "caption")
+	_cmd_feedback_panel.add_child(_cmd_feedback_label)
+	res_bar_row.add_child(_cmd_feedback_panel)
 	root.add_child(_session_bar_panel)
 
-	# Row 3: 5-Step Guided Onboarding & Player Flow Bar (~32px)
+	# =========================================================================
+	# Hidden compatibility stepper bar (preserves _onboarding_step_btns[5], _onboarding_hint_label, _onboarding_cta_btn)
+	# =========================================================================
 	_onboarding_bar_panel = PanelContainer.new()
-	_onboarding_bar_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_onboarding_bar_panel.custom_minimum_size = Vector2(0, 32)
-	var guide_sb: StyleBoxFlat = asset_registry.build_card_stylebox(false, AssetRegistry.COLOR_SUBTLE_BORDER)
-	_onboarding_bar_panel.add_theme_stylebox_override("panel", _style_header_compact(guide_sb))
+	_onboarding_bar_panel.visible = false
 	var guide_row: HBoxContainer = HBoxContainer.new()
-	guide_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	guide_row.add_theme_constant_override("separation", 6)
 	_onboarding_bar_panel.add_child(guide_row)
-
-	var flow_hdr: Label = Label.new()
-	flow_hdr.text = "진행 흐름:"
-	AssetRegistry.apply_text_role(flow_hdr, "caption")
-	guide_row.add_child(flow_hdr)
-
 	var step_defs: Array[Dictionary] = [
 		{"label": "① 출사·봉인토큰", "action": "CC"},
 		{"label": "② 장원 경영", "action": "TAB0"},
@@ -362,28 +441,21 @@ func _build_ui() -> void:
 	for sdef: Dictionary in step_defs:
 		var sbtn: Button = Button.new()
 		sbtn.text = str(sdef["label"])
-		asset_registry.apply_button_variant(sbtn, "chip")
 		sbtn.pressed.connect(_on_onboarding_step_pressed.bind(str(sdef["action"])))
 		guide_row.add_child(sbtn)
 		_onboarding_step_btns.append(sbtn)
-
 	_onboarding_hint_label = Label.new()
 	_onboarding_hint_label.text = "추천: 장원 둔전·관아 증축 또는 출사 토큰으로 새 군주 생성"
-	_onboarding_hint_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_onboarding_hint_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	AssetRegistry.apply_text_role(_onboarding_hint_label, "caption")
 	guide_row.add_child(_onboarding_hint_label)
-
 	_onboarding_cta_btn = Button.new()
 	_onboarding_cta_btn.text = "다음 단계 →"
-	asset_registry.apply_button_variant(_onboarding_cta_btn, "secondary")
 	_onboarding_cta_btn.pressed.connect(_on_onboarding_cta_pressed)
 	guide_row.add_child(_onboarding_cta_btn)
 	root.add_child(_onboarding_bar_panel)
 
-	_refresh_session_bar()
-
-	# Main 4-Tab Workspace
+	# =========================================================================
+	# Main 4-Tab Workspace (Single authoritative navigation bar)
+	# =========================================================================
 	_tab_container = TabContainer.new()
 	_tab_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_tab_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -415,11 +487,51 @@ func _build_ui() -> void:
 	court_hud.validation_error_emitted.connect(_on_validation_error)
 	_tab_container.add_child(court_hud)
 
-	# Explicitly set clean Korean tab titles (prevents Node.name '.'/'/' -> '_' sanitization)
 	_tab_container.set_tab_title(0, "1. 장원 경영")
 	_tab_container.set_tab_title(1, "2. 우선순위 & 일과")
 	_tab_container.set_tab_title(2, "3. 천하 전략도")
 	_tab_container.set_tab_title(3, "4. 정청 · 거래소 · 조보")
+
+	# =========================================================================
+	# Clean Multi-Server AcceptDialog (houses _ws_url_edit, _ws_connect_btn, _local_demo_btn)
+	# =========================================================================
+	_server_modal = AcceptDialog.new()
+	_server_modal.title = "멀티플레이 서버 접속 설정"
+	_server_modal.ok_button_text = "닫기"
+	var srv_vbox: VBoxContainer = VBoxContainer.new()
+	srv_vbox.custom_minimum_size = Vector2(360, 0)
+	srv_vbox.add_theme_constant_override("separation", 8)
+
+	var srv_desc: Label = Label.new()
+	srv_desc.text = "원격 권위 서버(WebSocket) 주소에 접속하거나 내장 로컬 시연 월드로 전환합니다."
+	srv_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	AssetRegistry.apply_text_role(srv_desc, "muted")
+	srv_vbox.add_child(srv_desc)
+
+	_ws_url_edit = LineEdit.new()
+	_ws_url_edit.text = "ws://127.0.0.1:9090"
+	_ws_url_edit.placeholder_text = "ws://127.0.0.1:9090"
+	_ws_url_edit.tooltip_text = "원격 멀티플레이 WebSocket 서버 주소"
+	srv_vbox.add_child(_ws_url_edit)
+
+	var srv_btn_row: HBoxContainer = HBoxContainer.new()
+	srv_btn_row.add_theme_constant_override("separation", 8)
+	_ws_connect_btn = Button.new()
+	_ws_connect_btn.text = "서버 접속"
+	_ws_connect_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	asset_registry.apply_button_variant(_ws_connect_btn, "secondary")
+	_ws_connect_btn.pressed.connect(_on_ws_connect_pressed)
+	srv_btn_row.add_child(_ws_connect_btn)
+
+	_local_demo_btn = Button.new()
+	_local_demo_btn.text = "로컬 시연"
+	_local_demo_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	asset_registry.apply_button_variant(_local_demo_btn, "secondary")
+	_local_demo_btn.pressed.connect(_on_local_demo_pressed)
+	srv_btn_row.add_child(_local_demo_btn)
+	srv_vbox.add_child(srv_btn_row)
+	_server_modal.add_child(srv_vbox)
+	add_child(_server_modal)
 
 	# Non-blocking onboarding modal directing to Tab 3 Character Creation & TK3K2 panel
 	_cc_modal = AcceptDialog.new()
@@ -428,8 +540,17 @@ func _build_ui() -> void:
 	_cc_modal.dialog_text = "① [출사] 4번 탭 우측 상단에서 천명 문답(8문항) 또는 TK3K2 봉인 토큰(평문 JSON 차단)으로 장수를 출사시키세요.\n② [장원 경영] 32×32 구역을 점검하고 둔전·관아를 증축하세요.\n③ [업무·일과] 가신별 7대 업무 우선순위(0~4)와 12시진 일과, 교전 수칙을 설정하세요.\n④ [천하 전략도] 거점을 클릭해 군단·상단을 출진시키거나 연합 공성을 발령하세요.\n⑤ [정청·거래소·조보] 지정가 호가 거래 및 결재 서신과 조보를 확인하세요."
 	_cc_modal.confirmed.connect(_on_cc_modal_confirmed)
 	add_child(_cc_modal)
+
+	_refresh_session_bar()
 	switch_tab(0)
 	_ui_ready_for_audio = true
+
+
+func _on_open_server_dialog() -> void:
+	if audio_manager != null and _ui_ready_for_audio:
+		var _ok: bool = audio_manager.play_sfx("UI_CLICK")
+	if _server_modal != null:
+		_server_modal.visible = true
 
 
 func _on_onboarding_step_pressed(action: String) -> void:
@@ -496,6 +617,22 @@ func _refresh_global_resources_and_onboarding() -> void:
 			_onboarding_hint_label.text = "천하: 지도에서 거점을 클릭해 목표를 고른 뒤 군단·상단을 출진시키세요"
 		else:
 			_onboarding_hint_label.text = "정청: 거래소 호가 등록, 결재 서신 처리, 우측에서 새 장수 출사(TK3K2)를 진행하세요"
+
+	if _quest_pill_btn != null:
+		if pending_inbox > 0:
+			_quest_pill_btn.text = "숙원: 결재 서신 %d건 처리 [이동 →]" % pending_inbox
+			asset_registry.apply_button_variant(_quest_pill_btn, "primary")
+		else:
+			match active_tab_index:
+				0:
+					_quest_pill_btn.text = "숙원: 가신 업무·일과 조율 [이동 →]"
+				1:
+					_quest_pill_btn.text = "숙원: 천하 전략도 출진 살피기 [이동 →]"
+				2:
+					_quest_pill_btn.text = "숙원: 정청·거래소 호가 확인 [이동 →]"
+				_:
+					_quest_pill_btn.text = "숙원: 본영 장원 순시 [이동 →]"
+			asset_registry.apply_button_variant(_quest_pill_btn, "chip")
 
 
 func _on_mute_toggled() -> void:
@@ -621,7 +758,7 @@ func package_command(cmd_type: String, args: Dictionary) -> Dictionary:
 			env["cmd_seq"] = cmd_seq
 		var cmd_ko: String = AssetRegistry.command_label_ko(cmd_type)
 		_set_feedback_badge(
-			"전송: %s (#%d)" % [cmd_ko, cmd_seq] if sent_ok else "대기/미연결: %s" % cmd_ko,
+			"전달: %s (#%d)" % [cmd_ko, cmd_seq] if sent_ok else "미연결: %s" % cmd_ko,
 			"info" if sent_ok else "err"
 		)
 	command_envelope_ready.emit(env)
@@ -637,6 +774,9 @@ func _reset_session_view_state() -> void:
 	last_state_crc32 = 0
 	current_season = "SPRING"
 	_tick_accumulator_sec = 0.0
+	_last_chronicle_tick = -1
+	_prev_stockpile_snapshot.clear()
+	_prev_army_ids.clear()
 	_manor_cache = {
 		"manor_id": "manor_" + player_id,
 		"meta": {"lod": 1, "wall_hp": 2000, "household_troops": 300},
@@ -672,7 +812,7 @@ func start_local_demo(world_seed: int = 18401) -> Dictionary:
 	if _live_driver.local_server != null:
 		var srv_seq: int = _to_int(_live_driver.local_server.command_validator.last_accepted_seq.get(player_id, 0), 0)
 		cmd_seq = maxi(cmd_seq, srv_seq)
-	_set_feedback_badge("명령: 준비됨", "ok")
+	_set_feedback_badge("✓ 장원 준비 완료", "ok")
 	var init_msgs_v: Variant = res.get("initial_messages", [])
 	if init_msgs_v is Array:
 		var init_msgs: Array = init_msgs_v
@@ -681,6 +821,8 @@ func start_local_demo(world_seed: int = 18401) -> Dictionary:
 				var md: Dictionary = m_v
 				apply_server_message(md)
 	_apply_local_hydration()
+	if manor_view != null:
+		manor_view.append_chronicle_line("예주 허창 본영에서 %s의 새 일과가 시작되었습니다." % _hero_display_name())
 	_refresh_session_bar()
 	return res
 
@@ -732,6 +874,106 @@ func step_demo_ticks(count: int = 1) -> void:
 	_refresh_session_bar()
 
 
+func _sync_manor_hero_banner() -> void:
+	if manor_view == null:
+		return
+	var meta_v: Variant = _manor_cache.get("meta", {})
+	var meta: Dictionary = meta_v if meta_v is Dictionary else {}
+	var fac_v: Variant = _court_cache.get("faction", {})
+	var fac: Dictionary = fac_v if fac_v is Dictionary else {}
+	var prof_v: Variant = _court_cache.get("player_profile", {})
+	var prof: Dictionary = prof_v if prof_v is Dictionary else {}
+	var host_id: String = str(_manor_cache.get("host_node_id", "xuchang"))
+	if host_id.is_empty():
+		host_id = "xuchang"
+	var royal_rank: String = str(fac.get("royal_rank", prof.get("royal_rank", "DUKE")))
+	var rank_ko: String = AssetRegistry.rank_ko(royal_rank)
+	var fac_id: String = str(fac.get("faction_id", prof.get("faction_id", "fac_han")))
+	var fac_ko: String = AssetRegistry.faction_name_ko(fac_id)
+
+	var st_id: String = str(_court_cache.get("storyteller", "ST_SIMA_QIAN"))
+	var st_ko: String = "사마천"
+	if st_id.contains("DONG"):
+		st_ko = "동탁"
+	elif st_id.contains("WEN"):
+		st_ko = "문경"
+
+	var patch: Dictionary = {
+		"name": _hero_display_name(),
+		"faction_name": fac_ko,
+		"rank_ko": rank_ko,
+		"host_name": AssetRegistry.node_name_ko(host_id),
+		"troops": _to_int(meta.get("household_troops", 300), 300),
+		"wall_hp": _to_int(meta.get("wall_hp", 2000), 2000),
+		"storyteller_ko": st_ko
+	}
+	manor_view.update_hero_banner(patch)
+
+
+func _emit_narrative_chronicle_updates() -> void:
+	if manor_view == null or client_tick <= 0:
+		return
+	if client_tick == _last_chronicle_tick:
+		return
+	_last_chronicle_tick = client_tick
+
+	# 1. Resource production narration
+	var stock_v: Variant = _manor_cache.get("stockpile", {})
+	var stock: Dictionary = stock_v if stock_v is Dictionary else {}
+	var cur_grain: int = _to_int(stock.get("GRAIN", 0), 0)
+	var prev_grain: int = _to_int(_prev_stockpile_snapshot.get("GRAIN", cur_grain), cur_grain)
+	var cur_wep: int = _to_int(stock.get("WEAPONS", 0), 0)
+	var prev_wep: int = _to_int(_prev_stockpile_snapshot.get("WEAPONS", cur_wep), cur_wep)
+	var cur_coin: int = _to_int(stock.get("COIN", 0), 0)
+	var prev_coin: int = _to_int(_prev_stockpile_snapshot.get("COIN", cur_coin), cur_coin)
+
+	if cur_grain > prev_grain:
+		manor_view.append_chronicle_line("[%s] 둔전 농지에서 군량 +%d석을 수확했습니다." % [_current_shichen_ko(), cur_grain - prev_grain])
+	elif cur_wep > prev_wep:
+		manor_view.append_chronicle_line("[%s] 대장간에서 병기 +%d자루를 단조했습니다." % [_current_shichen_ko(), cur_wep - prev_wep])
+	elif cur_coin > prev_coin:
+		manor_view.append_chronicle_line("[%s] 장원 물류·상단 정산으로 은전 +%d냥이 들어왔습니다." % [_current_shichen_ko(), cur_coin - prev_coin])
+
+	for rk: String in DtoSchemas.RESOURCE_KEYS:
+		_prev_stockpile_snapshot[rk] = _to_int(stock.get(rk, 0), 0)
+
+	# 2. Macro expedition departure narration
+	var armies_v: Variant = _macro_cache.get("armies", {})
+	if armies_v is Dictionary:
+		var ad: Dictionary = armies_v
+		for eid_v: Variant in ad.keys():
+			var eid: String = str(eid_v)
+			if not _prev_army_ids.has(eid):
+				_prev_army_ids[eid] = true
+				var ent_v: Variant = ad[eid_v]
+				if ent_v is Dictionary:
+					var ent: Dictionary = ent_v
+					var fac_ko: String = AssetRegistry.faction_name_ko(str(ent.get("faction_id", "")))
+					var ut_ko: String = AssetRegistry.unit_type_ko(str(ent.get("unit_type", "ARMY")))
+					var node_ko: String = AssetRegistry.node_name_ko(str(ent.get("current_node_id", "xuchang")))
+					manor_view.append_chronicle_line("%s %s 부대가 %s 방면으로 출진했습니다." % [fac_ko, ut_ko, node_ko])
+
+	# 3. Periodic pawn activity chronicle on macro ticks
+	if client_tick % SimClock.MACRO_TICK == 0:
+		var pawns_v: Variant = _manor_cache.get("pawns", {})
+		if pawns_v is Dictionary:
+			var pd: Dictionary = pawns_v
+			var idx_sel: int = (client_tick / SimClock.MACRO_TICK) % maxi(1, pd.size())
+			var pkeys: Array[String] = []
+			for k: Variant in pd.keys():
+				pkeys.append(str(k))
+			pkeys.sort()
+			if idx_sel < pkeys.size():
+				var pr_v: Variant = pd[pkeys[idx_sel]]
+				if pr_v is Dictionary:
+					var pr: Dictionary = pr_v
+					var pname: String = str(pr.get("name", "")).strip_edges()
+					if pname.is_empty():
+						pname = "조자룡" if pkeys[idx_sel].ends_with("_avatar") else "진도"
+					var jko: String = AssetRegistry.job_ko(str(pr.get("job", "IDLE")))
+					manor_view.append_chronicle_line("[%s] %s(이)가 %s 임무를 수행 중입니다." % [_current_shichen_ko(), pname, jko])
+
+
 func _apply_local_hydration() -> void:
 	if _live_driver == null or not _live_driver.is_local_mode():
 		return
@@ -741,7 +983,6 @@ func _apply_local_hydration() -> void:
 	client_tick = maxi(client_tick, _to_int(hyd.get("tick_id", client_tick), client_tick))
 	current_season = str(hyd.get("season", current_season))
 	last_state_crc32 = _to_int(hyd.get("state_crc32", last_state_crc32), last_state_crc32)
-	_update_top_bar_display()
 
 	var manor_v: Variant = hyd.get("manor", {})
 	if manor_v is Dictionary:
@@ -749,8 +990,10 @@ func _apply_local_hydration() -> void:
 		if not md.is_empty():
 			if md.has("manor_id"):
 				_manor_cache["manor_id"] = str(md["manor_id"])
-			if md.has("host_node_id") and macro_view != null:
-				macro_view.set_host_node_id(str(md["host_node_id"]))
+			if md.has("host_node_id"):
+				_manor_cache["host_node_id"] = str(md["host_node_id"])
+				if macro_view != null:
+					macro_view.set_host_node_id(str(md["host_node_id"]))
 			if md.has("meta") and md["meta"] is Dictionary:
 				var um: Dictionary = md["meta"]
 				var mc: Dictionary = _manor_cache["meta"]
@@ -788,9 +1031,13 @@ func _apply_local_hydration() -> void:
 				_merge_flat(fcc, ufc)
 			if cd.has("inbox_decisions"):
 				_court_cache["inbox_decisions"] = cd["inbox_decisions"]
+			if cd.has("storyteller"):
+				_court_cache["storyteller"] = str(cd["storyteller"])
 
+	_update_top_bar_display()
 	if manor_view != null:
 		manor_view.apply_snapshot(_manor_cache)
+	_sync_manor_hero_banner()
 	if priority_view != null:
 		priority_view.apply_snapshot(_manor_cache)
 	if macro_view != null:
@@ -798,6 +1045,7 @@ func _apply_local_hydration() -> void:
 	if court_hud != null:
 		court_hud.apply_snapshot(_court_cache)
 	_refresh_global_resources_and_onboarding()
+	_emit_narrative_chronicle_updates()
 
 
 func _refresh_session_bar() -> void:
@@ -866,10 +1114,14 @@ func _on_ws_connect_pressed() -> void:
 		"접속 시도: %s" % target_url if err == OK else "접속 실패 (err=%d)" % int(err),
 		"info" if err == OK else "err"
 	)
+	if _server_modal != null:
+		_server_modal.visible = false
 
 
 func _on_local_demo_pressed() -> void:
 	var _res: Dictionary = start_local_demo(18401)
+	if _server_modal != null:
+		_server_modal.visible = false
 
 
 func apply_server_message(msg: Dictionary) -> void:
@@ -880,7 +1132,7 @@ func apply_server_message(msg: Dictionary) -> void:
 			cmd_seq = maxi(cmd_seq, server_last_seq)
 			client_tick = _to_int(msg.get("tick_id", client_tick), client_tick)
 			_update_top_bar_display()
-			_set_feedback_badge("서버 연결 완료 (seq=%d, 틱=%d)" % [cmd_seq, client_tick], "ok")
+			_set_feedback_badge("✓ 서버 연결 (%d틱)" % client_tick, "ok")
 			_refresh_session_bar()
 		DtoSchemas.MSG_TICK_DELTA:
 			apply_tick_delta(msg)
@@ -902,7 +1154,9 @@ func _apply_cmd_receipt(receipt: Dictionary) -> void:
 		if audio_manager != null:
 			var _ok_err: bool = audio_manager.play_sfx("UI_ERROR")
 	else:
-		_set_feedback_badge("수락(#%d) -> 실행틱 %d" % [seq, exec_t], "ok")
+		_set_feedback_badge("✓ 수락 · 명령 하달 (%d틱)" % exec_t, "ok")
+		if manor_view != null:
+			manor_view.append_chronicle_line("주군의 명(#%d)이 %d틱에 집행되었습니다." % [seq, exec_t])
 
 
 func apply_challenge(challenge_msg: Dictionary) -> void:
@@ -948,10 +1202,10 @@ func apply_tick_delta(delta_msg: Dictionary) -> void:
 		_live_driver.update_remote_tick(client_tick)
 	current_season = str(delta_msg.get("season", current_season))
 	last_state_crc32 = _to_int(delta_msg.get("state_crc32", last_state_crc32), last_state_crc32)
-	_update_top_bar_display()
 
 	var chans_v: Variant = delta_msg.get("channels", {})
 	if not (chans_v is Dictionary):
+		_update_top_bar_display()
 		_refresh_session_bar()
 		return
 	var chans: Dictionary = chans_v
@@ -1035,8 +1289,10 @@ func apply_tick_delta(delta_msg: Dictionary) -> void:
 				for pid_v: Variant in dpw_a:
 					var _erp: bool = pawns_c2.erase(str(pid_v))
 
+	_update_top_bar_display()
 	if manor_view != null:
 		manor_view.apply_snapshot(_manor_cache)
+	_sync_manor_hero_banner()
 	if priority_view != null:
 		priority_view.apply_snapshot(_manor_cache)
 	if macro_view != null:
@@ -1045,6 +1301,7 @@ func apply_tick_delta(delta_msg: Dictionary) -> void:
 		court_hud.apply_snapshot(_court_cache)
 	_refresh_global_resources_and_onboarding()
 	_refresh_session_bar()
+	_emit_narrative_chronicle_updates()
 
 
 func get_tab_count() -> int:

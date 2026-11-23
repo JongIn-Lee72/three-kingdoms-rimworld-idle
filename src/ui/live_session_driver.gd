@@ -12,7 +12,7 @@ const BOT_SHU_PEER: String = "peer_ally_shu"
 
 var mode: int = MODE_NONE
 var player_id: String = "player_01"
-var display_name: String = "한실 장수"
+var display_name: String = "조자룡"
 var local_peer_id: String = "peer_player_01"
 
 var local_server: AuthoritativeServer = null
@@ -127,11 +127,11 @@ func _make_envelope(pid: String, seq: int, tick_id: int, cmd_type: String, args:
 	}
 
 
-func start_local_demo(world_seed: int = 18401, p_player_id: String = "player_01", p_display_name: String = "주인공 군주") -> Dictionary:
+func start_local_demo(world_seed: int = 18401, p_player_id: String = "player_01", p_display_name: String = "조자룡") -> Dictionary:
 	stop()
 
 	player_id = p_player_id if not p_player_id.is_empty() else "player_01"
-	display_name = p_display_name if not p_display_name.is_empty() else player_id
+	display_name = p_display_name if not p_display_name.is_empty() else "조자룡"
 	local_peer_id = "peer_" + player_id
 
 	local_server = AuthoritativeServer.new(world_seed, "ST_SIMA_QIAN")
@@ -175,6 +175,47 @@ func start_local_demo(world_seed: int = 18401, p_player_id: String = "player_01"
 	# Step tick 1 to execute character creation & spawn starter manors + pawns
 	var _step1: Dictionary = local_server.step_micro_tick()
 
+	# Populate authentic Three Kingdoms hero & sworn retainer identity on starter manor
+	if local_server.manors.has(player_id):
+		var m_init_v: Variant = local_server.manors[player_id]
+		if m_init_v is ManorState:
+			var m_init: ManorState = m_init_v
+			for p_init: PawnEntity in m_init.pawns:
+				if p_init.is_avatar:
+					p_init.name = display_name
+					p_init.courtesy_name = "자룡" if display_name == "조자룡" else p_init.courtesy_name
+					p_init.epithet = "한실 신흥군 주군"
+					p_init.set_stat("LEA", 74)
+					p_init.set_stat("MAR", 86)
+					p_init.set_stat("INT", 70)
+					p_init.set_stat("POL", 72)
+					p_init.set_stat("CHA", 79)
+					p_init.traits = ["T_CHIVALROUS", "T_AMBITIOUS"]
+					p_init.set_work_priority("PATROL", 1)
+					p_init.set_work_priority("TRAINING", 2)
+					p_init.set_work_priority("AGRICULTURE", 2)
+					p_init.set_work_priority("LOGISTICS", 2)
+					p_init.grid_x = 15
+					p_init.grid_y = 6
+					if local_server.player_accounts.has(player_id):
+						var acct_p: Dictionary = local_server.player_accounts[player_id]
+						acct_p["persona_profile_json"] = StateHasher.canonical_json({
+							"avatar_name": p_init.name,
+							"courtesy_name": p_init.courtesy_name,
+							"epithet": p_init.epithet,
+							"stats": p_init.stats,
+							"traits": p_init.traits
+						})
+				else:
+					p_init.name = "진도"
+					p_init.epithet = "백이병 도독"
+					p_init.traits = ["T_AGRARIAN", "T_UNSELFISH"]
+					p_init.set_work_priority("AGRICULTURE", 1)
+					p_init.set_work_priority("LOGISTICS", 2)
+					p_init.set_work_priority("PATROL", 2)
+					p_init.grid_x = 8
+					p_init.grid_y = 9
+
 	# Establish authentic Three Kingdoms factions & diplomatic alliance
 	var _f_han: Dictionary = local_server.faction_manager.create_faction(
 		"fac_han", "한실 신흥군", player_id, "xuchang", local_server.world_graph, 8000, 9000, "DUKE"
@@ -217,9 +258,10 @@ func start_local_demo(world_seed: int = 18401, p_player_id: String = "player_01"
 		{"note": "허창 군량 조달 칙서"}
 	)
 
-	# Advance to first macro tick (ticks 2..6) so AI bots submit initial orders/caravans and match occurs
+	# Advance to morning daytime (진시, tick 8) so bots execute initial orders/caravans
+	# and manor pawns are visibly engaged in active daytime work
 	var drained: Array[Dictionary] = []
-	for _i: int in range(5):
+	for _i: int in range(7):
 		var step_msgs: Array[Dictionary] = step_local_tick()
 		for sm: Dictionary in step_msgs:
 			drained.append(sm)
@@ -389,6 +431,13 @@ func build_local_ui_hydration() -> Dictionary:
 			var pawns_cfg: Dictionary = {}
 			for p: PawnEntity in m.pawns:
 				pawns_cfg[p.pawn_id] = {
+					"name": p.name,
+					"courtesy_name": p.courtesy_name,
+					"epithet": p.epithet,
+					"is_avatar": p.is_avatar,
+					"origin_archetype": p.origin_archetype,
+					"stats": p.stats.duplicate(true),
+					"traits": p.traits.duplicate(),
 					"x": p.grid_x,
 					"y": p.grid_y,
 					"job": p.current_job,
@@ -428,10 +477,12 @@ func build_local_ui_hydration() -> Dictionary:
 	var fac: Dictionary = local_server.faction_manager.get_faction(fid) if not fid.is_empty() else {}
 	var pending_inbox: Array[Dictionary] = local_server.chronicle_inbox.get_pending_decisions_for_player(player_id)
 
+	var st_id: String = local_server.storyteller.persona_id if local_server.storyteller != null else "ST_SIMA_QIAN"
 	var court_patch: Dictionary = {
 		"player_profile": prof.duplicate(true),
 		"faction": fac.duplicate(true),
-		"inbox_decisions": pending_inbox
+		"inbox_decisions": pending_inbox,
+		"storyteller": st_id
 	}
 
 	return {
@@ -443,13 +494,13 @@ func build_local_ui_hydration() -> Dictionary:
 	}
 
 
-func connect_remote_ws(url: String, p_player_id: String = "player_01", p_display_name: String = "주인공 군주") -> Error:
+func connect_remote_ws(url: String, p_player_id: String = "player_01", p_display_name: String = "조자룡") -> Error:
 	stop()
 	var clean_url: String = url.strip_edges()
 	if clean_url.is_empty():
 		return ERR_INVALID_PARAMETER
 	player_id = p_player_id if not p_player_id.is_empty() else "player_01"
-	display_name = p_display_name if not p_display_name.is_empty() else player_id
+	display_name = p_display_name if not p_display_name.is_empty() else "조자룡"
 	ws_url = clean_url
 	ws_transport = NetworkTransport.new(NetworkTransport.MODE_WEBSOCKET)
 	var err: Error = ws_transport.connect_websocket(clean_url)

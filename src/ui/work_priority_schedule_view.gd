@@ -25,6 +25,19 @@ const PRISONER_OPTIONS: Array[String] = [
 	"RECRUIT_PERSUADE", "RANSOM", "RELEASE_CHIVALROUS"
 ]
 
+const TRAIT_NAMES_KO: Dictionary = {
+	"T_CHIVALROUS": "의협",
+	"T_AMBITIOUS": "야심가",
+	"T_CAUTIOUS": "신중함",
+	"T_DRINKER": "호주가",
+	"T_MYSTIC": "둔갑",
+	"T_UNSELFISH": "청렴",
+	"T_GREEDY": "탐욕",
+	"T_FIERCE": "맹장",
+	"T_AGRARIAN": "둔전가",
+	"T_SCHOLAR": "명사"
+}
+
 var _assets: AssetRegistry = null
 var _section_panels_slate: Array[PanelContainer] = []
 var _section_panels_gold: Array[PanelContainer] = []
@@ -35,6 +48,7 @@ var _doctrine_icon: TextureRect = null
 
 var _pawn_selector: OptionButton = null
 var _pawn_status_label: Label = null
+var _pawn_stats_pill_label: Label = null
 var _ration_summary_label: Label = null
 var _priority_buttons: Dictionary = {}   # domain -> Array[Button]
 var _schedule_selectors: Array[OptionButton] = []
@@ -63,6 +77,29 @@ static func _to_int(v: Variant, fallback: int = 0) -> int:
 		var bv: bool = v
 		return int(bv)
 	return fallback
+
+
+static func _trait_ko(trait_id: String) -> String:
+	if TRAIT_NAMES_KO.has(trait_id):
+		return str(TRAIT_NAMES_KO[trait_id])
+	return trait_id
+
+
+static func _format_pawn_display_name(pid: String, pd_item: Dictionary, retainer_idx: int) -> String:
+	var raw_av: Variant = pd_item.get("is_avatar", false)
+	var flag_av: bool = false
+	if raw_av is bool:
+		var b_av: bool = raw_av
+		flag_av = b_av
+	var is_av: bool = pid.ends_with("_avatar") or flag_av
+	var disp_name: String = str(pd_item.get("name", "")).strip_edges()
+	if disp_name == "주인공 군주" or disp_name == "Nameless_Hero" or disp_name.is_empty():
+		disp_name = "조자룡" if is_av else "진도"
+	elif disp_name == "Retainer":
+		disp_name = "서약 가신 %d" % maxi(1, retainer_idx)
+	if is_av:
+		return "주군 %s (주인공)" % disp_name
+	return "서약 가신 %s" % disp_name
 
 
 func _init() -> void:
@@ -141,7 +178,7 @@ func _build_ui() -> void:
 	outer.add_theme_constant_override("separation", 6)
 	add_child(outer)
 
-	# Top Pawn Selector, Status Badge & Quick Presets
+	# Top Pawn Selector, Status Badge, 5-Stat & Trait Pill Bar & Quick Presets
 	var top_sec: VBoxContainer = _make_card_panel(outer, true, AssetRegistry.COLOR_GOLD_ACCENT)
 	var pawn_row: HBoxContainer = HBoxContainer.new()
 	pawn_row.add_theme_constant_override("separation", 8)
@@ -158,7 +195,7 @@ func _build_ui() -> void:
 	pawn_row.add_child(_pawn_selector)
 
 	_pawn_status_label = Label.new()
-	_pawn_status_label.text = "직무: 대기 · 기분 50 · 충성 50% · 건강"
+	_pawn_status_label.text = "주군 조자룡 (주인공) · 직무: 대기 · 기분 55 · 충성 80% · 상태: 평온"
 	_pawn_status_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	AssetRegistry.apply_text_role(_pawn_status_label, "muted")
 	pawn_row.add_child(_pawn_status_label)
@@ -178,6 +215,26 @@ func _build_ui() -> void:
 		pbtn.text = str(pdef["label"])
 		pbtn.pressed.connect(_on_preset_pressed.bind(str(pdef["id"])))
 		pawn_row.add_child(pbtn)
+
+	# Compact 5-Stat & Trait Pill Bar
+	var stat_pill_panel: PanelContainer = PanelContainer.new()
+	stat_pill_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var pill_sb: StyleBoxFlat = StyleBoxFlat.new()
+	pill_sb.bg_color = Color(0.11, 0.10, 0.09, 0.94)
+	pill_sb.border_color = AssetRegistry.COLOR_SUBTLE_BORDER
+	pill_sb.set_border_width_all(1)
+	pill_sb.set_corner_radius_all(4)
+	pill_sb.content_margin_left = 10.0
+	pill_sb.content_margin_right = 10.0
+	pill_sb.content_margin_top = 4.0
+	pill_sb.content_margin_bottom = 4.0
+	stat_pill_panel.add_theme_stylebox_override("panel", pill_sb)
+	_pawn_stats_pill_label = Label.new()
+	_pawn_stats_pill_label.text = "통솔 64 · 무력 64 · 지력 64 · 정치 64 · 매력 64 | 특성: 의협 · 신중함"
+	_pawn_stats_pill_label.add_theme_font_size_override("font_size", AssetRegistry.FONT_SIZE_BODY)
+	_pawn_stats_pill_label.add_theme_color_override("font_color", AssetRegistry.COLOR_GOLD_HIGHLIGHT)
+	stat_pill_panel.add_child(_pawn_stats_pill_label)
+	top_sec.add_child(stat_pill_panel)
 
 	# 2-Column HSplitContainer Dashboard
 	var split: HSplitContainer = HSplitContainer.new()
@@ -201,6 +258,12 @@ func _build_ui() -> void:
 
 	var prio_sec: VBoxContainer = _make_card_panel(left_col, false)
 	_prio_icon = _make_header_with_icon(prio_sec, "7대 업무 우선순위 매트릭스")
+
+	var loop_sub: Label = Label.new()
+	loop_sub.text = "위(물류·운반)부터 아래(외교·교류) 순서로 1→4 우선순위가 24시간 자동 실행됩니다"
+	loop_sub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	AssetRegistry.apply_text_role(loop_sub, "muted")
+	prio_sec.add_child(loop_sub)
 
 	var legend_lbl: Label = Label.new()
 	legend_lbl.text = "1 최우선(홍금) · 2 높음(호박) · 3 보통(청자) · 4 낮음(연록) · 0 제외(비활성)"
@@ -256,7 +319,7 @@ func _build_ui() -> void:
 	ration_sec.add_child(r_title)
 
 	_ration_summary_label = Label.new()
-	_ration_summary_label.text = "현재 식량 배급: 표준식(STANDARD) · 명주 배급 활성(호주가 가신 기분 보너스) · 비축 약주: 0"
+	_ration_summary_label.text = "현재 식량 배급: 표준식(보통) · 명주 배급 활성(호주가 가신 기분 보너스) · 비축 약주: 0"
 	_ration_summary_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	AssetRegistry.apply_text_role(_ration_summary_label, "muted")
 	ration_sec.add_child(_ration_summary_label)
@@ -277,6 +340,12 @@ func _build_ui() -> void:
 	var sched_sec: VBoxContainer = _make_card_panel(right_col, false)
 	var sched_hdr_row: HBoxContainer = HBoxContainer.new()
 	_sched_icon = _make_header_with_icon(sched_sec, "십이지시(12시진) 일과표")
+
+	var sched_sub: Label = Label.new()
+	sched_sub.text = "하루 12시진(24시간) 동안 가신이 자동으로 수행할 집무·연무·연회·취침 리듬을 배정합니다"
+	sched_sub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	AssetRegistry.apply_text_role(sched_sub, "caption")
+	sched_sec.add_child(sched_sub)
 
 	var sched_grid: GridContainer = GridContainer.new()
 	sched_grid.columns = 4
@@ -319,6 +388,12 @@ func _build_ui() -> void:
 	var doc_sec: VBoxContainer = _make_card_panel(right_col, true, AssetRegistry.COLOR_GOLD_ACCENT)
 	_doctrine_icon = _make_header_with_icon(doc_sec, "상시 교전 수칙 (원정 · 방어 자동 판단)")
 
+	var doc_sub: Label = Label.new()
+	doc_sub.text = "부재 중 침공 방어나 장거리 원정 출진 시 가신·장수들이 따르는 기본 전술 방침입니다"
+	doc_sub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	AssetRegistry.apply_text_role(doc_sub, "caption")
+	doc_sec.add_child(doc_sub)
+
 	_stance_opt = _make_option_row(doc_sec, "교전 태세:", STANCE_OPTIONS)
 	_formation_opt = _make_option_row(doc_sec, "기본 진형:", FORMATION_OPTIONS)
 	_duel_opt = _make_option_row(doc_sec, "일기토 수칙:", DUEL_OPTIONS)
@@ -359,6 +434,14 @@ func _get_selected_pawn_from_selector(index: int) -> String:
 	if md is String and not str(md).is_empty():
 		return str(md)
 	return _pawn_selector.get_item_text(index)
+
+
+func _get_selected_pawn_id() -> String:
+	if not _selected_pawn_id.is_empty():
+		return _selected_pawn_id
+	if _pawn_selector != null and _pawn_selector.selected >= 0:
+		return _get_selected_pawn_from_selector(_pawn_selector.selected)
+	return ""
 
 
 func _on_pawn_selected(index: int) -> void:
@@ -566,11 +649,37 @@ func _refresh_pawn_controls() -> void:
 		return
 	var pd: Dictionary = p_v
 	if _pawn_status_label != null:
+		var disp_lbl: String = _format_pawn_display_name(_selected_pawn_id, pd, 1)
 		var job_ko_s: String = AssetRegistry.job_ko(str(pd.get("job", pd.get("current_job", "IDLE"))))
 		var mood_i: int = clampi(_to_int(pd.get("mood", 50), 50), 0, 100)
 		var loy_pct: int = clampi(_to_int(pd.get("loyalty_bp", 5000), 5000) / 100, 0, 100)
 		var mstate_s: String = AssetRegistry.mental_state_ko(str(pd.get("mental_state", "NORMAL")))
-		_pawn_status_label.text = "직무: %s · 기분 %d · 충성 %d%% · 상태: %s" % [job_ko_s, mood_i, loy_pct, mstate_s]
+		_pawn_status_label.text = "%s · 직무: %s · 기분 %d · 충성 %d%% · 상태: %s" % [disp_lbl, job_ko_s, mood_i, loy_pct, mstate_s]
+
+	if _pawn_stats_pill_label != null:
+		var stats_v: Variant = pd.get("stats", {})
+		var stats_d: Dictionary = stats_v if stats_v is Dictionary else {}
+		var raw_av_pill: Variant = pd.get("is_avatar", false)
+		var flag_av_pill: bool = false
+		if raw_av_pill is bool:
+			var b_av_pill: bool = raw_av_pill
+			flag_av_pill = b_av_pill
+		var is_av: bool = _selected_pawn_id.ends_with("_avatar") or flag_av_pill
+		var lea_i: int = _to_int(stats_d.get("LEA", 74 if is_av else 62), 64)
+		var mar_i: int = _to_int(stats_d.get("MAR", 86 if is_av else 58), 64)
+		var int_i: int = _to_int(stats_d.get("INT", 70 if is_av else 78), 64)
+		var pol_i: int = _to_int(stats_d.get("POL", 72 if is_av else 68), 64)
+		var cha_i: int = _to_int(stats_d.get("CHA", 79 if is_av else 64), 64)
+		var traits_v: Variant = pd.get("traits", [])
+		var trait_names: PackedStringArray = PackedStringArray()
+		if traits_v is Array:
+			var ta: Array = traits_v
+			for tv: Variant in ta:
+				var _ok_t: bool = trait_names.append(_trait_ko(str(tv)))
+		var traits_str: String = " · ".join(trait_names) if not trait_names.is_empty() else ("의협 · 야심가" if is_av else "신중함 · 청렴")
+		_pawn_stats_pill_label.text = "통솔 %d · 무력 %d · 지력 %d · 정치 %d · 매력 %d | 특성: %s" % [
+			lea_i, mar_i, int_i, pol_i, cha_i, traits_str
+		]
 
 	var wp_v: Variant = pd.get("work_priorities", {})
 	if wp_v is Dictionary:
@@ -628,6 +737,7 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 
 	ordered_ids.sort()
 	_pawn_selector.clear()
+	var retainer_counter: int = 0
 	for idx: int in range(ordered_ids.size()):
 		var pid: String = ordered_ids[idx]
 		var pd_item: Dictionary = _pawns_cache[pid]
@@ -637,12 +747,9 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 			var b_av: bool = raw_av
 			flag_av = b_av
 		var is_av: bool = pid.ends_with("_avatar") or flag_av
-		var disp_name: String = str(pd_item.get("name", ""))
-		var label_txt: String = ""
-		if not disp_name.is_empty():
-			label_txt = "%s (%s)" % [disp_name, pid]
-		else:
-			label_txt = "주군 아바타 (%s)" % pid if is_av else "서약 가신 (%s)" % pid
+		if not is_av:
+			retainer_counter += 1
+		var label_txt: String = _format_pawn_display_name(pid, pd_item, retainer_counter)
 		_pawn_selector.add_item(label_txt)
 		_pawn_selector.set_item_metadata(idx, pid)
 
@@ -682,7 +789,9 @@ func reset_view_state() -> void:
 	if _pawn_selector != null:
 		_pawn_selector.clear()
 	if _pawn_status_label != null:
-		_pawn_status_label.text = "직무: 대기 · 기분 50 · 충성 50% · 건강"
+		_pawn_status_label.text = "주군 조자룡 (주인공) · 직무: 대기 · 기분 55 · 충성 80% · 상태: 평온"
+	if _pawn_stats_pill_label != null:
+		_pawn_stats_pill_label.text = "통솔 64 · 무력 64 · 지력 64 · 정치 64 · 매력 64 | 특성: 의협 · 신중함"
 	for dom: String in PawnEntity.WORK_DOMAINS:
 		_update_priority_button_visuals(dom, 2)
 	_current_schedule = [

@@ -105,34 +105,60 @@ static func _faction_ring_color(faction_id: String) -> Color:
 	if upper.contains("YELLOW") or upper.contains("TURBAN"):
 		return Color(0.92, 0.78, 0.24, 0.98)
 	if upper.contains("WEI") or upper.contains("CAO"):
-		return Color(0.30, 0.56, 0.90, 0.98)
+		return Color(0.28, 0.54, 0.94, 0.98)
+	if upper.contains("SHU") or upper.contains("LIU"):
+		return Color(0.24, 0.78, 0.48, 0.98)
 	if upper.contains("WU") or upper.contains("SUN"):
-		return Color(0.28, 0.74, 0.46, 0.98)
-	if upper.contains("SHU") or upper.contains("HAN") or upper.contains("LIU"):
-		return Color(0.84, 0.30, 0.26, 0.98)
+		return Color(0.86, 0.28, 0.26, 0.98)
+	if upper.contains("HAN"):
+		return Color(0.95, 0.78, 0.30, 0.98)
 	return AssetRegistry.COLOR_GOLD_HIGHLIGHT
+
+
+static func _faction_halo_color(faction_id: String) -> Color:
+	var upper: String = faction_id.to_upper()
+	if upper == "" or upper == "NEUTRAL":
+		return Color(0.55, 0.52, 0.46, 0.10)
+	var base_c: Color = _faction_ring_color(faction_id)
+	return Color(base_c.r, base_c.g, base_c.b, 0.18)
+
+
+static func _faction_short_ko(faction_id: String) -> String:
+	match faction_id:
+		"", "NEUTRAL":
+			return "중립"
+		"fac_han":
+			return "한실군"
+		"fac_wei":
+			return "위군"
+		"fac_shu":
+			return "촉군"
+		"fac_wu":
+			return "오군"
+		_:
+			return AssetRegistry.faction_name_ko(faction_id)
 
 
 static func _node_label_offset(node_id: String, radius: float) -> Vector2:
 	match node_id:
 		"ye_county":
-			return Vector2(-32.0, -radius - 6.0)
+			return Vector2(-38.0, -radius - 6.0)
 		"ye_city":
-			return Vector2(10.0, radius + 12.0)
+			return Vector2(14.0, 5.0)
 		"luoyang":
-			return Vector2(-36.0, -radius - 6.0)
+			return Vector2(-38.0, -radius - 6.0)
 		"hulao_pass":
-			return Vector2(13.0, -radius - 3.0)
+			return Vector2(-46.0, radius + 12.0)
 		"changan":
-			return Vector2(-18.0, -radius - 6.0)
+			return Vector2(-18.0, -radius - 7.0)
 		"tong_pass":
 			return Vector2(-14.0, radius + 14.0)
 		"chenliu":
-			return Vector2(10.0, -radius - 4.0)
+			return Vector2(12.0, -radius - 4.0)
 		"xuchang":
-			return Vector2(-26.0, radius + 14.0)
+			return Vector2(-18.0, radius + 16.0)
 		_:
-			return Vector2(-18.0, radius + 13.0)
+			return Vector2(-18.0, radius + 14.0)
 
 
 func _init() -> void:
@@ -248,7 +274,7 @@ func _build_ui() -> void:
 	hdr_row.add_child(_summary_label)
 
 	var legend_lbl: Label = Label.new()
-	legend_lbl.text = "도로: 황금(가도) · 갈색(산길) · 청색(수운) | 세력: 적(한/촉) · 청(위) · 녹(오) · 회(중립)"
+	legend_lbl.text = "도로: 황금(가도) · 갈색(산길) · 청색(수운) | 세력: 청(위) · 녹(촉) · 적(오) · 황금(한실)"
 	AssetRegistry.apply_text_role(legend_lbl, "caption")
 	hdr_row.add_child(legend_lbl)
 
@@ -380,12 +406,12 @@ func _build_ui() -> void:
 	row4.add_child(_create_rally_btn)
 
 	var rally_lbl: Label = Label.new()
-	rally_lbl.text = "집결 ID:"
+	rally_lbl.text = "집결 번호:"
 	AssetRegistry.apply_text_role(rally_lbl, "caption")
 	row4.add_child(rally_lbl)
 
 	_rally_id_edit = LineEdit.new()
-	_rally_id_edit.placeholder_text = "rally_000001"
+	_rally_id_edit.placeholder_text = "연합 집결 번호 입력"
 	_rally_id_edit.custom_minimum_size = Vector2(115, 0)
 	_rally_id_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row4.add_child(_rally_id_edit)
@@ -528,9 +554,43 @@ func _update_selected_node_detail() -> void:
 	var owner_ko: String = AssetRegistry.faction_name_ko(owner_fid)
 	var fort_hp: int = _to_int(nd.get("fortification_hp", 0), 0)
 	var sec_pct: float = float(_to_int(nd.get("security_bp", 7000), 7000)) / 100.0
-	_selected_node_detail_label.text = "선택 거점: %s · %s | 점령: %s | 성벽 %s | 치안 %.1f%% (출진 거점: %s)" % [
+	_selected_node_detail_label.text = "선택 거점: %s (%s) | 점령: %s | 성벽 %s | 치안 %.1f%% | 내 장원: ★ %s" % [
 		name_ko, prov, owner_ko, AssetRegistry.format_num(fort_hp), sec_pct, AssetRegistry.node_name_ko(_host_node_id)
 	]
+
+
+func _draw_province_watermarks(canvas_size: Vector2, font: Font) -> void:
+	if _map_canvas == null or font == null:
+		return
+	var pad_x: float = 34.0
+	var pad_y: float = 28.0
+	var usable_w: float = maxf(64.0, canvas_size.x - pad_x * 2.0)
+	var usable_h: float = maxf(64.0, canvas_size.y - pad_y * 2.0)
+	var regions: Array[Dictionary] = [
+		{"nx": 465, "ny": 230, "label": "기주 (하북)"},
+		{"nx": 165, "ny": 395, "label": "옹양주 (관중)"},
+		{"nx": 575, "ny": 670, "label": "중원 (예·연주)"},
+		{"nx": 755, "ny": 430, "label": "서주"},
+		{"nx": 345, "ny": 730, "label": "형주"},
+		{"nx": 130, "ny": 885, "label": "익주 (촉)"},
+		{"nx": 795, "ny": 725, "label": "강동 (양주)"}
+	]
+	var ink_col: Color = Color(0.24, 0.16, 0.09, 0.48)
+	for reg: Dictionary in regions:
+		var nx_i: int = _to_int(reg.get("nx", 500), 500)
+		var ny_i: int = _to_int(reg.get("ny", 500), 500)
+		var rx: float = pad_x + (float(nx_i) / 1000.0) * usable_w
+		var ry: float = pad_y + (float(ny_i) / 1000.0) * usable_h
+		var rtxt: String = str(reg["label"])
+		_map_canvas.draw_string(
+			font,
+			Vector2(rx, ry),
+			rtxt,
+			HORIZONTAL_ALIGNMENT_LEFT,
+			-1,
+			13,
+			ink_col
+		)
 
 
 func _on_map_canvas_draw() -> void:
@@ -546,17 +606,14 @@ func _on_map_canvas_draw() -> void:
 		var map_bg: Texture2D = _assets.get_texture(AssetRegistry.MAP_BG)
 		if map_bg != null:
 			_map_canvas.draw_texture_rect(map_bg, canvas_rect, false)
-		_map_canvas.draw_rect(canvas_rect, Color(0.08, 0.06, 0.05, 0.20))
+		_map_canvas.draw_rect(canvas_rect, Color(0.08, 0.06, 0.05, 0.22))
 
-	for ed: Dictionary in _static_edges:
-		var from_id: String = str(ed.get("from_node", ""))
-		var to_id: String = str(ed.get("to_node", ""))
-		if from_id.is_empty() or to_id.is_empty():
-			continue
-		var p1: Vector2 = _node_screen_pos(from_id, canvas_size)
-		var p2: Vector2 = _node_screen_pos(to_id, canvas_size)
-		var terrain: String = str(ed.get("terrain_type", "HIGHWAY"))
-		_map_canvas.draw_line(p1, p2, _terrain_color(terrain), 2.5, true)
+	var font: Font = _assets.get_ui_font() if _assets != null else ThemeDB.fallback_font
+	if font == null:
+		font = ThemeDB.fallback_font
+
+	# 1. Subtle Province Region Watermarks
+	_draw_province_watermarks(canvas_size, font)
 
 	var node_ids: Array[String] = []
 	for k: Variant in _static_nodes.keys():
@@ -567,24 +624,48 @@ func _on_map_canvas_draw() -> void:
 			node_ids.append(cks)
 	node_ids.sort()
 
-	var font: Font = _assets.get_ui_font() if _assets != null else ThemeDB.fallback_font
-	if font == null:
-		font = ThemeDB.fallback_font
+	# 2. Faction Territory Influence Halos behind owned cities
+	for nid: String in node_ids:
+		var nd: Dictionary = _cached_nodes[nid] if _cached_nodes.has(nid) and _cached_nodes[nid] is Dictionary else {}
+		var st: Dictionary = _static_nodes[nid] if _static_nodes.has(nid) and _static_nodes[nid] is Dictionary else {}
+		var owner_fid: String = str(nd.get("owner_faction_id", st.get("owner_faction_id", "NEUTRAL")))
+		if owner_fid.is_empty() or owner_fid == "NEUTRAL":
+			continue
+		var pos: Vector2 = _node_screen_pos(nid, canvas_size)
+		var tier: String = str(nd.get("node_tier", st.get("node_tier", "COUNTY")))
+		var halo_r: float = 46.0 if tier == "CAPITAL" else (42.0 if tier == "CITY" else 34.0)
+		_map_canvas.draw_circle(pos, halo_r, _faction_halo_color(owner_fid))
+
+	# 3. Roads / Waterways / Mountain Passes
+	for ed: Dictionary in _static_edges:
+		var from_id: String = str(ed.get("from_node", ""))
+		var to_id: String = str(ed.get("to_node", ""))
+		if from_id.is_empty() or to_id.is_empty():
+			continue
+		var p1: Vector2 = _node_screen_pos(from_id, canvas_size)
+		var p2: Vector2 = _node_screen_pos(to_id, canvas_size)
+		var terrain: String = str(ed.get("terrain_type", "HIGHWAY"))
+		_map_canvas.draw_line(p1, p2, _terrain_color(terrain), 2.5, true)
+
+	# 4. City Nodes + Tier Distinction + ★ 내 장원 Highlight + Zero-Overlap Labels
 	for nid: String in node_ids:
 		var nd: Dictionary = _cached_nodes[nid] if _cached_nodes.has(nid) and _cached_nodes[nid] is Dictionary else {}
 		var st: Dictionary = _static_nodes[nid] if _static_nodes.has(nid) and _static_nodes[nid] is Dictionary else {}
 		var pos: Vector2 = _node_screen_pos(nid, canvas_size)
 		var tier: String = str(nd.get("node_tier", st.get("node_tier", "COUNTY")))
 		var owner_fid: String = str(nd.get("owner_faction_id", st.get("owner_faction_id", "NEUTRAL")))
-		var name_ko: String = str(nd.get("name_ko", st.get("name_ko", nid)))
-		var radius: float = 13.0 if tier == "CAPITAL" else (11.0 if tier == "CITY" or tier == "PASS" else 9.0)
+		var name_ko: String = str(nd.get("name_ko", st.get("name_ko", AssetRegistry.node_name_ko(nid))))
+		var radius: float = 15.0 if tier == "CAPITAL" else (12.0 if tier == "CITY" or tier == "PASS" else 9.0)
 		var ring_col: Color = _faction_ring_color(owner_fid)
+
+		if nid == _host_node_id:
+			_map_canvas.draw_arc(pos, radius + 9.0, 0.0, TAU, 32, Color(0.98, 0.84, 0.34, 0.95), 2.2, true)
 
 		if nid == _selected_node_id:
 			_map_canvas.draw_arc(pos, radius + 6.0, 0.0, TAU, 28, AssetRegistry.COLOR_GOLD_HIGHLIGHT, 2.5, true)
 
-		_map_canvas.draw_circle(pos, radius + 2.0, Color(0.08, 0.06, 0.05, 0.88))
-		_map_canvas.draw_arc(pos, radius + 2.0, 0.0, TAU, 24, ring_col, 2.5, true)
+		_map_canvas.draw_circle(pos, radius + 2.0, Color(0.08, 0.06, 0.05, 0.90))
+		_map_canvas.draw_arc(pos, radius + 2.0, 0.0, TAU, 24, ring_col, 2.8 if tier == "CAPITAL" else 2.2, true)
 
 		var icon_rect: Rect2 = Rect2(pos - Vector2(radius, radius), Vector2(radius * 2.0, radius * 2.0))
 		if _assets != null:
@@ -599,19 +680,40 @@ func _on_map_canvas_draw() -> void:
 		if font != null:
 			var loff: Vector2 = _node_label_offset(nid, radius)
 			var txt_pos: Vector2 = pos + loff
-			var pill_w: float = float(name_ko.length() * 11 + 8)
-			var pill_rect: Rect2 = Rect2(txt_pos.x - 4.0, txt_pos.y - 11.0, pill_w, 14.0)
-			_map_canvas.draw_rect(pill_rect, Color(0.08, 0.06, 0.05, 0.78))
+			var label_str: String = name_ko
+			if tier == "CAPITAL":
+				label_str = "◆ " + name_ko
+			var pill_w: float = float(label_str.length() * 11 + 10)
+			var pill_rect: Rect2 = Rect2(txt_pos.x - 4.0, txt_pos.y - 11.0, pill_w, 15.0)
+			_map_canvas.draw_rect(pill_rect, Color(0.08, 0.06, 0.05, 0.84))
+			_map_canvas.draw_rect(pill_rect, ring_col if nid == _selected_node_id else Color(0.38, 0.30, 0.20, 0.80), false, 1.0)
 			_map_canvas.draw_string(
 				font,
 				txt_pos,
-				name_ko,
+				label_str,
 				HORIZONTAL_ALIGNMENT_LEFT,
 				-1,
 				11,
 				AssetRegistry.COLOR_GOLD_HIGHLIGHT if nid == _selected_node_id else AssetRegistry.COLOR_TEXT_PRIMARY
 			)
 
+			if nid == _host_node_id:
+				var home_txt: String = "★ 내 장원"
+				var home_pos: Vector2 = pos + Vector2(-28.0, -radius - 14.0)
+				var home_rect: Rect2 = Rect2(home_pos.x - 4.0, home_pos.y - 11.0, 66.0, 15.0)
+				_map_canvas.draw_rect(home_rect, Color(0.24, 0.16, 0.04, 0.94))
+				_map_canvas.draw_rect(home_rect, AssetRegistry.COLOR_GOLD_HIGHLIGHT, false, 1.2)
+				_map_canvas.draw_string(
+					font,
+					home_pos,
+					home_txt,
+					HORIZONTAL_ALIGNMENT_LEFT,
+					-1,
+					10,
+					AssetRegistry.COLOR_GOLD_HIGHLIGHT
+				)
+
+	# 5. Live Armies & Caravans + Sleek Miniature Callout Badges
 	var army_ids: Array[String] = []
 	for ak: Variant in _cached_armies.keys():
 		army_ids.append(str(ak))
@@ -626,18 +728,33 @@ func _on_map_canvas_draw() -> void:
 		if cur_nid.is_empty():
 			continue
 		var base_pos: Vector2 = _node_screen_pos(cur_nid, canvas_size)
-		var offset: Vector2 = Vector2(14.0 + float((idx % 3) * 10), -14.0 - float((idx / 3) * 10))
+		var offset: Vector2 = Vector2(16.0 + float((idx % 3) * 14), -16.0 - float((idx / 3) * 14))
 		var apos: Vector2 = base_pos + offset
 		var utype: String = str(ent.get("unit_type", "ARMY"))
+		var afid: String = str(ent.get("faction_id", "NEUTRAL"))
+		var acol: Color = _faction_ring_color(afid)
 		var arect: Rect2 = Rect2(apos - Vector2(9.0, 9.0), Vector2(18.0, 18.0))
+		_map_canvas.draw_circle(apos, 10.0, Color(0.08, 0.06, 0.05, 0.85))
+		_map_canvas.draw_arc(apos, 10.0, 0.0, TAU, 18, acol, 1.5, true)
 		if _assets != null:
 			var atex: Texture2D = _assets.get_army_icon(utype)
 			if atex != null:
 				_map_canvas.draw_texture_rect(atex, arect, false)
 			else:
-				_map_canvas.draw_rect(arect, AssetRegistry.COLOR_CRIMSON_ACCENT)
+				_map_canvas.draw_rect(arect, acol)
 		else:
-			_map_canvas.draw_rect(arect, AssetRegistry.COLOR_CRIMSON_ACCENT)
+			_map_canvas.draw_rect(arect, acol)
+
+		if font != null:
+			var troops_i: int = _to_int(ent.get("troop_count", 0), 0)
+			var fshort: String = _faction_short_ko(afid)
+			var badge_txt: String = "%s 상단" % fshort if utype == "CARAVAN" else "%s %d" % [fshort, troops_i]
+			var bpos: Vector2 = apos + Vector2(12.0, 4.0)
+			var bw: float = float(badge_txt.length() * 8 + 10)
+			var brect: Rect2 = Rect2(bpos.x - 3.0, bpos.y - 10.0, bw, 13.0)
+			_map_canvas.draw_rect(brect, Color(0.09, 0.07, 0.06, 0.88))
+			_map_canvas.draw_rect(brect, acol, false, 1.0)
+			_map_canvas.draw_string(font, bpos, badge_txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, acol)
 
 
 func _get_selected_target_node_id() -> String:
@@ -797,6 +914,39 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 	_redraw_lists()
 
 
+func _format_army_entry_ko(ent: Dictionary) -> String:
+	var ut_raw: String = str(ent.get("unit_type", "ARMY"))
+	var ut_ko: String = AssetRegistry.unit_type_ko(ut_raw)
+	var fac_ko: String = AssetRegistry.faction_name_ko(str(ent.get("faction_id", "NEUTRAL")))
+	var cur_nid: String = str(ent.get("current_node_id", ""))
+	var loc_ko: String = AssetRegistry.node_name_ko(cur_nid)
+	var st_raw: String = str(ent.get("status", "MARCHING"))
+	var st_ko: String = AssetRegistry.unit_type_ko(st_raw)
+	var troops_str: String = AssetRegistry.format_num(_to_int(ent.get("troop_count", 0), 0))
+	var morale_pct: float = float(_to_int(ent.get("morale_bp", 8000), 8000)) / 100.0
+	var icon_prefix: String = "🐎" if ut_raw == "CARAVAN" else ("🏴" if ut_raw == "COALITION_FORCE" else "⚔️")
+
+	var edge_id: String = str(ent.get("edge_id", ent.get("current_edge_id", "")))
+	var dest_ko: String = ""
+	if not edge_id.is_empty() and _world_graph != null and _world_graph.has_edge(edge_id) and not cur_nid.is_empty():
+		var next_nid: String = _world_graph.get_other_endpoint(edge_id, cur_nid)
+		if not next_nid.is_empty():
+			dest_ko = AssetRegistry.node_name_ko(next_nid)
+	if dest_ko.is_empty():
+		var t_nid: String = str(ent.get("target_node_id", ""))
+		if not t_nid.is_empty() and t_nid != cur_nid:
+			dest_ko = AssetRegistry.node_name_ko(t_nid)
+
+	var loc_phrase: String = "%s → %s %s" % [loc_ko, dest_ko, st_ko] if (not dest_ko.is_empty() and st_raw == "MARCHING") else "%s %s" % [loc_ko, st_ko]
+	if ut_raw == "CARAVAN":
+		return "%s [%s · %s] %s · 호위 %s · 사기 %.0f%%" % [
+			icon_prefix, fac_ko, ut_ko, loc_phrase, troops_str, morale_pct
+		]
+	return "%s [%s · %s] %s · 병력 %s · 사기 %.0f%%" % [
+		icon_prefix, fac_ko, ut_ko, loc_phrase, troops_str, morale_pct
+	]
+
+
 func _redraw_lists() -> void:
 	var nids: Array[String] = []
 	for k: Variant in _cached_nodes.keys():
@@ -819,22 +969,35 @@ func _redraw_lists() -> void:
 	for idx_n: int in range(nids.size()):
 		var nid: String = nids[idx_n]
 		var nd: Dictionary = _cached_nodes[nid]
-		var name_ko: String = str(nd.get("name_ko", AssetRegistry.node_name_ko(nid)))
-		var prov: String = str(nd.get("province", "-"))
-		var owner_fid: String = str(nd.get("owner_faction_id", "NEUTRAL"))
+		var st: Dictionary = _static_nodes[nid] if _static_nodes.has(nid) and _static_nodes[nid] is Dictionary else {}
+		var name_ko: String = str(nd.get("name_ko", st.get("name_ko", AssetRegistry.node_name_ko(nid))))
+		var prov: String = str(nd.get("province", st.get("province", "-")))
+		var owner_fid: String = str(nd.get("owner_faction_id", st.get("owner_faction_id", "NEUTRAL")))
 		var owner_ko: String = AssetRegistry.faction_name_ko(owner_fid)
 		var fort_hp: int = _to_int(nd.get("fortification_hp", 0), 0)
 		var sec_pct: float = float(_to_int(nd.get("security_bp", 7000), 7000)) / 100.0
 
-		_target_node_opt.add_item("%s · %s (%s)" % [name_ko, prov, nid])
+		_target_node_opt.add_item("%s (%s)" % [name_ko, prov])
 		_target_node_opt.set_item_metadata(idx_n, nid)
 
+		var row_n: HBoxContainer = HBoxContainer.new()
+		row_n.add_theme_constant_override("separation", 6)
+		var badge: Label = Label.new()
+		badge.text = "● %s" % _faction_short_ko(owner_fid)
+		badge.custom_minimum_size = Vector2(56, 0)
+		badge.add_theme_font_size_override("font_size", AssetRegistry.FONT_SIZE_CAPTION)
+		badge.add_theme_color_override("font_color", _faction_ring_color(owner_fid))
+		row_n.add_child(badge)
+
 		var lbl: Label = Label.new()
-		lbl.text = "%s (%s) · %s · 성벽 %s · 치안 %.0f%%" % [
-			name_ko, prov, owner_ko, AssetRegistry.format_num(fort_hp), sec_pct
+		var home_tag: String = " ★" if nid == _host_node_id else ""
+		lbl.text = "%s%s (%s) · %s · 성벽 %s · 치안 %.0f%%" % [
+			name_ko, home_tag, prov, owner_ko, AssetRegistry.format_num(fort_hp), sec_pct
 		]
+		lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		AssetRegistry.apply_text_role(lbl, "caption")
-		_nodes_box.add_child(lbl)
+		row_n.add_child(lbl)
+		_nodes_box.add_child(row_n)
 
 	if not prev_sel_nid.is_empty():
 		var idx: int = nids.find(prev_sel_nid)
@@ -857,21 +1020,10 @@ func _redraw_lists() -> void:
 	for eid: String in eids:
 		var ent: Dictionary = _cached_armies[eid]
 		var lbl_a: Label = Label.new()
-		var ut_ko: String = AssetRegistry.unit_type_ko(str(ent.get("unit_type", "ARMY")))
-		var fac_ko: String = AssetRegistry.faction_name_ko(str(ent.get("faction_id", "NEUTRAL")))
-		var loc_ko: String = AssetRegistry.node_name_ko(str(ent.get("current_node_id", "")))
-		var st_ko: String = AssetRegistry.unit_type_ko(str(ent.get("status", "MARCHING")))
-		var morale_pct: float = float(_to_int(ent.get("morale_bp", 8000), 8000)) / 100.0
-		lbl_a.text = "%s [%s · %s] | 거점:%s | 병력 %s | 사기 %.0f%% | %s" % [
-			eid,
-			ut_ko,
-			fac_ko,
-			loc_ko,
-			AssetRegistry.format_num(_to_int(ent.get("troop_count", 0), 0)),
-			morale_pct,
-			st_ko
-		]
+		lbl_a.text = _format_army_entry_ko(ent)
+		lbl_a.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		AssetRegistry.apply_text_role(lbl_a, "muted")
+		lbl_a.add_theme_color_override("font_color", _faction_ring_color(str(ent.get("faction_id", "NEUTRAL"))))
 		_armies_box.add_child(lbl_a)
 
 	for ch_r: Node in _rallies_box.get_children():
@@ -883,17 +1035,19 @@ func _redraw_lists() -> void:
 	rids.sort()
 	if _rallies_empty_label != null:
 		_rallies_empty_label.visible = rids.is_empty()
-	for rid: String in rids:
+	for idx_r: int in range(rids.size()):
+		var rid: String = rids[idx_r]
 		var ral: Dictionary = _cached_rallies[rid]
 		var lbl_r: Label = Label.new()
 		var tgt_ko: String = AssetRegistry.node_name_ko(str(ral.get("target_node_id", "")))
 		var rst_ko: String = AssetRegistry.unit_type_ko(str(ral.get("status", "RALLYING")))
-		lbl_r.text = "%s → %s | %s | 참여군단 %d" % [
-			rid,
+		lbl_r.text = "⚑ 제%d연합 집결 → %s 공성 · %s · 참여 군단 %d" % [
+			idx_r + 1,
 			tgt_ko,
 			rst_ko,
 			_to_int(ral.get("participant_count", 1), 1)
 		]
+		lbl_r.tooltip_text = "집결 코드: %s" % rid
 		AssetRegistry.apply_text_role(lbl_r, "muted")
 		_rallies_box.add_child(lbl_r)
 

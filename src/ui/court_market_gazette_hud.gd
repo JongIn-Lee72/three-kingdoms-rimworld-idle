@@ -180,11 +180,19 @@ func _make_kpi_tile(parent: GridContainer, title_txt: String, initial_val: Strin
 	return vlbl
 
 
-func _load_interview_question_titles() -> Array[String]:
-	var titles: Array[String] = [
+func _load_interview_question_entries() -> Array[Dictionary]:
+	var fallback_titles: Array[String] = [
 		"Q1 난세 낙하", "Q2 황건의 불길", "Q3 권력과 명분", "Q4 전장의 철학",
 		"Q5 몰입의 불꽃", "Q6 인간의 그림자", "Q7 삶의 리듬", "Q8 첫 발걸음"
 	]
+	var entries: Array[Dictionary] = []
+	for fi: int in range(8):
+		entries.append({
+			"title": fallback_titles[fi],
+			"choices": ["A안", "B안", "C안", "D안"],
+			"full_choices": ["A안", "B안", "C안", "D안"]
+		})
+
 	if FileAccess.file_exists("res://data/interview_questions.json"):
 		var f: FileAccess = FileAccess.open("res://data/interview_questions.json", FileAccess.READ)
 		if f != null:
@@ -195,14 +203,37 @@ func _load_interview_question_titles() -> Array[String]:
 				var qs_v: Variant = pd.get("questions", [])
 				if qs_v is Array:
 					var qs: Array = qs_v
+					var choice_letters: Array[String] = ["A", "B", "C", "D"]
 					for i: int in range(mini(8, qs.size())):
 						if qs[i] is Dictionary:
 							var qd: Dictionary = qs[i]
 							var stitle: String = str(qd.get("scene_title", ""))
-							var short_t: String = stitle.split(":")[0] if stitle.contains(":") else stitle
+							var short_t: String = stitle.split(":")[0].strip_edges() if stitle.contains(":") else stitle.strip_edges()
 							if not short_t.is_empty():
-								titles[i] = "Q%d %s" % [i + 1, short_t]
-	return titles
+								entries[i]["title"] = "Q%d %s" % [i + 1, short_t]
+							var ch_v: Variant = qd.get("choices", {})
+							if ch_v is Dictionary:
+								var ch_d: Dictionary = ch_v
+								var short_list: Array[String] = []
+								var full_list: Array[String] = []
+								for cl: String in choice_letters:
+									var cv: Variant = ch_d.get(cl, {})
+									var full_txt: String = cl + "안"
+									if cv is Dictionary:
+										var cd: Dictionary = cv
+										var raw_txt: String = str(cd.get("text", "")).strip_edges()
+										if not raw_txt.is_empty():
+											full_txt = raw_txt
+									full_list.append(full_txt)
+									var clean_short: String = full_txt
+									if clean_short.ends_with("."):
+										clean_short = clean_short.substr(0, clean_short.length() - 1)
+									if clean_short.length() > 26:
+										clean_short = clean_short.substr(0, 25) + "…"
+									short_list.append(clean_short)
+								entries[i]["choices"] = short_list
+								entries[i]["full_choices"] = full_list
+	return entries
 
 
 func _build_ui() -> void:
@@ -248,6 +279,7 @@ func _build_ui() -> void:
 	court_sec.add_child(kpi_grid)
 
 	_court_label = Label.new()
+	_court_label.visible = false
 	_court_label.text = "세력: 무소속 | 신분: FREE_OFFICER | 품계: NONE | 작위: GOVERNOR_INSPECTOR"
 	_court_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	AssetRegistry.apply_text_role(_court_label, "caption")
@@ -275,19 +307,18 @@ func _build_ui() -> void:
 	mkt_row1.add_child(city_lbl)
 
 	_mkt_node_opt = OptionButton.new()
-	_mkt_node_opt.custom_minimum_size = Vector2(125, 0)
+	_mkt_node_opt.custom_minimum_size = Vector2(145, 0)
 	var market_cities: Array[String] = ["xuchang", "luoyang", "changan", "ye_city", "chengdu", "jianye", "xiapi"]
 	for mci: int in range(market_cities.size()):
 		var cid: String = market_cities[mci]
-		_mkt_node_opt.add_item("%s (%s)" % [AssetRegistry.node_name_ko(cid), cid])
+		_mkt_node_opt.add_item(AssetRegistry.node_name_ko(cid))
 		_mkt_node_opt.set_item_metadata(mci, cid)
 	_mkt_node_opt.item_selected.connect(_on_mkt_city_selected)
 	mkt_row1.add_child(_mkt_node_opt)
 
 	_mkt_node_edit = LineEdit.new()
 	_mkt_node_edit.text = "xuchang"
-	_mkt_node_edit.custom_minimum_size = Vector2(90, 0)
-	_mkt_node_edit.tooltip_text = "직접 입력할 거래소 거점 ID (예: xuchang)"
+	_mkt_node_edit.visible = false
 	mkt_row1.add_child(_mkt_node_edit)
 
 	_mkt_comm_opt = OptionButton.new()
@@ -395,7 +426,7 @@ func _build_ui() -> void:
 	AssetRegistry.apply_text_role(n_lbl, "caption")
 	cc_row1.add_child(n_lbl)
 	_cc_name_edit = LineEdit.new()
-	_cc_name_edit.text = "Nameless_Hero"
+	_cc_name_edit.text = "조자룡"
 	_cc_name_edit.custom_minimum_size = Vector2(125, 0)
 	_cc_name_edit.placeholder_text = "장수 이름"
 	cc_row1.add_child(_cc_name_edit)
@@ -489,8 +520,8 @@ func _build_ui() -> void:
 	AssetRegistry.apply_text_role(_cc_preview_status_label, "caption")
 	cc_sec.add_child(_cc_preview_status_label)
 
-	# 8-Question Interview Option Selectors in clean 2-column grid
-	var q_titles: Array[String] = _load_interview_question_titles()
+	# 8-Question Interview Option Selectors in clean 2-column grid with real Korean narrative choices
+	var q_entries: Array[Dictionary] = _load_interview_question_entries()
 	var q_grid: GridContainer = GridContainer.new()
 	q_grid.columns = 2
 	q_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -500,11 +531,20 @@ func _build_ui() -> void:
 		var q_opt: OptionButton = OptionButton.new()
 		q_opt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		q_opt.clip_text = true
-		var qt: String = q_titles[qi]
-		q_opt.add_item("%s: A안" % qt)
-		q_opt.add_item("%s: B안" % qt)
-		q_opt.add_item("%s: C안" % qt)
-		q_opt.add_item("%s: D안" % qt)
+		var qentry: Dictionary = q_entries[qi]
+		var qt: String = str(qentry.get("title", "Q%d" % (qi + 1)))
+		var ch_v: Variant = qentry.get("choices", [])
+		var full_v: Variant = qentry.get("full_choices", [])
+		var ch_arr: Array = ch_v if ch_v is Array else []
+		var full_arr: Array = full_v if full_v is Array else []
+		var tip_lines: PackedStringArray = PackedStringArray()
+		var _ok_th: bool = tip_lines.append(qt)
+		for ci: int in range(4):
+			var c_short: String = str(ch_arr[ci]) if ci < ch_arr.size() else "%d안" % (ci + 1)
+			var c_full: String = str(full_arr[ci]) if ci < full_arr.size() else c_short
+			q_opt.add_item("%s: %s" % [qt, c_short])
+			var _ok_tl: bool = tip_lines.append("• %s" % c_full)
+		q_opt.tooltip_text = "\n".join(tip_lines)
 		q_grid.add_child(q_opt)
 		_cc_interview_opts.append(q_opt)
 	cc_sec.add_child(q_grid)
@@ -656,11 +696,16 @@ func _on_token_text_changed(new_text: String) -> void:
 		_cc_preview_status_label.add_theme_color_override("font_color", AssetRegistry.COLOR_DANGER_CRIMSON)
 
 
-func _on_submit_cc_pressed() -> void:
-	var mode: String = _get_option_meta_or_text(_cc_mode_opt, "INTERVIEW_ONLY")
+func get_interview_answers() -> Array[int]:
 	var answers: Array[int] = []
 	for opt: OptionButton in _cc_interview_opts:
 		answers.append(maxi(0, opt.selected))
+	return answers
+
+
+func _on_submit_cc_pressed() -> void:
+	var mode: String = _get_option_meta_or_text(_cc_mode_opt, "INTERVIEW_ONLY")
+	var answers: Array[int] = get_interview_answers()
 	var fine: Dictionary = {}
 	if _cc_origin_opt != null:
 		fine["origin_override"] = _get_option_meta_or_text(_cc_origin_opt, "ORIGIN_CHIVALROUS_HERO")
@@ -694,7 +739,7 @@ func submit_character_creation(
 			return {"ok": false, "error_code": err_code}
 
 	var args: Dictionary = {
-		"avatar_name": avatar_name if not avatar_name.is_empty() else "Nameless_Hero",
+		"avatar_name": avatar_name if not avatar_name.is_empty() else "조자룡",
 		"creation_mode": mode,
 		"interview_answers": interview_answers.duplicate(),
 		"sealed_token_input": sealed_token_input.strip_edges()
@@ -790,8 +835,17 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 		_court_kpi_grain_val.text = AssetRegistry.format_num(t_grain)
 
 	# Keep _court_label containing raw faction_id, role_tier, royal_rank tokens for existing tests
-	_court_label.text = "세력: %s | 신분: %s | 품계: %s | 작위: %s | 위명: %d | 국고(전/량): %d / %d" % [
-		fid, role_raw, crank_raw, rrank_raw, prestige_v, t_coin, t_grain
+	_court_label.text = "세력: %s (%s) | 신분: %s (%s) | 품계: %s | 작위: %s (%s) | 위명: %s | 국고: 은전 %s · 군량 %s" % [
+		AssetRegistry.faction_name_ko(fid),
+		fid,
+		AssetRegistry.role_ko(role_raw),
+		role_raw,
+		AssetRegistry.rank_ko(crank_raw),
+		AssetRegistry.rank_ko(rrank_raw),
+		rrank_raw,
+		AssetRegistry.format_num(prestige_v),
+		AssetRegistry.format_num(t_coin),
+		AssetRegistry.format_num(t_grain)
 	]
 
 	for ch_m: Node in _members_box.get_children():
@@ -804,13 +858,17 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 		for k: Variant in md.keys():
 			mkeys.append(str(k))
 		mkeys.sort()
-		for mk: String in mkeys:
+		for mi: int in range(mkeys.size()):
+			var mk: String = mkeys[mi]
 			var mv: Variant = md[mk]
 			if mv is Dictionary:
 				var mdict: Dictionary = mv
+				var m_name: String = str(mdict.get("display_name", mdict.get("name", "")))
+				if m_name.is_empty():
+					m_name = "주군 조자룡" if str(mdict.get("role_tier", "")) == "LORD" else "세력 가신 %d" % (mi + 1)
 				var mlbl: Label = Label.new()
-				mlbl.text = "동료 %s · %s (%s) · 공적 %s" % [
-					mk,
+				mlbl.text = "• %s · %s (%s) · 공적 %s" % [
+					m_name,
 					AssetRegistry.role_ko(str(mdict.get("role_tier", "FACTION_OFFICER"))),
 					AssetRegistry.rank_ko(str(mdict.get("court_rank", "RANK_9"))),
 					AssetRegistry.format_num(_to_int(mdict.get("war_merit", 0), 0))
@@ -826,9 +884,9 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 	var p_parts: PackedStringArray = PackedStringArray()
 	for comm: String in DtoSchemas.MARKET_COMMODITIES:
 		if _cached_prices.has(comm):
-			var _ok_p: bool = p_parts.append("%s %s" % [AssetRegistry.resource_label_ko(comm), AssetRegistry.format_num(_to_int(_cached_prices[comm], 1000))])
+			var _ok_p: bool = p_parts.append("%s %s전" % [AssetRegistry.resource_label_ko(comm), AssetRegistry.format_num(_to_int(_cached_prices[comm], 1000))])
 	if not p_parts.is_empty():
-		_market_prices_label.text = "지역 시세(bp): " + " | ".join(p_parts)
+		_market_prices_label.text = "지역 시세: " + " | ".join(p_parts)
 
 	if snapshot.has("orders") and snapshot["orders"] is Dictionary:
 		var ord_d: Dictionary = snapshot["orders"]
@@ -856,14 +914,16 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 		var od: Dictionary = _cached_orders[oid]
 		var side_s: String = str(od.get("side", "BID"))
 		var comm_s: String = str(od.get("commodity", "GRAIN"))
+		var rem_qty: int = _to_int(od.get("remaining_qty", 0), 0)
+		var price_val: int = _to_int(od.get("price_bp", 1000), 1000)
 		var olbl: Label = Label.new()
-		olbl.text = "%s | %s %s | 단가 %s bp | 잔량 %s" % [
-			oid,
-			"매수(BID)" if side_s == "BID" else "매도(ASK)",
+		olbl.text = "[%s] %s %s개 · 단가 %s전" % [
+			"매수" if side_s == "BID" else "매도",
 			AssetRegistry.resource_label_ko(comm_s),
-			AssetRegistry.format_num(_to_int(od.get("price_bp", 1000), 1000)),
-			AssetRegistry.format_num(_to_int(od.get("remaining_qty", 0), 0))
+			AssetRegistry.format_num(rem_qty),
+			AssetRegistry.format_num(price_val)
 		]
+		olbl.tooltip_text = "주문 번호: %s" % oid
 		olbl.add_theme_color_override("font_color", AssetRegistry.COLOR_SUCCESS_JADE if side_s == "BID" else AssetRegistry.COLOR_DANGER_CRIMSON)
 		_orders_box.add_child(olbl)
 
@@ -884,10 +944,12 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 	for dec: Dictionary in _cached_inbox:
 		var did: String = str(dec.get("decision_id", ""))
 		var etype: String = str(dec.get("event_type", "EVENT"))
+		var deadline_ticks: int = _to_int(dec.get("deadline_tick", 0), 0)
 		var row: HBoxContainer = HBoxContainer.new()
 		row.add_theme_constant_override("separation", 6)
 		var ilbl: Label = Label.new()
-		ilbl.text = "[%s] %s (만료:%d틱)" % [did, AssetRegistry.inbox_label_ko(etype), _to_int(dec.get("deadline_tick", 0), 0)]
+		ilbl.text = "📜 [%s] 남은 기한 %d시진" % [AssetRegistry.inbox_label_ko(etype), deadline_ticks]
+		ilbl.tooltip_text = "서신 코드: %s" % did
 		ilbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(ilbl)
 		var opts_v: Variant = dec.get("options", [])
@@ -914,11 +976,11 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 		if heg_v is Dictionary:
 			var heg: Dictionary = heg_v
 			if not heg.is_empty():
+				var h_fac: String = AssetRegistry.faction_name_ko(str(heg.get("faction_name", heg.get("faction_id", ""))))
 				var hl: Label = Label.new()
-				hl.text = "%s: %s (%s) 점수=%s" % [
+				hl.text = "👑 %s: %s · %s점" % [
 					SeasonHegemonyService.HEGEMON_TITLE_KO,
-					str(heg.get("faction_name", heg.get("faction_id", ""))),
-					str(heg.get("lord_player_id", "")),
+					h_fac,
 					AssetRegistry.format_num(_to_int(heg.get("score", 0), 0))
 				]
 				_hegemony_box.add_child(hl)
@@ -928,9 +990,9 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 			var top_o: Dictionary = top_v
 			if not top_o.is_empty():
 				var ol: Label = Label.new()
-				ol.text = "%s: %s 점수=%s" % [
+				ol.text = "🎖️ %s: %s · %s점" % [
 					SeasonHegemonyService.TOP_OFFICER_TITLE_KO,
-					str(top_o.get("player_id", "")),
+					str(top_o.get("display_name", top_o.get("player_id", ""))),
 					AssetRegistry.format_num(_to_int(top_o.get("score", 0), 0))
 				]
 				_hegemony_box.add_child(ol)
