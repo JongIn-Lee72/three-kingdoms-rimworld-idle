@@ -486,7 +486,7 @@ func _validate_stage5_domain(
 			var path_arr: Array = path_var
 			if path_arr.is_empty():
 				return {"ok": false, "error_code": DtoSchemas.ERR_SCHEMA, "reason": "path_edge_ids empty"}
-			var cur_node: String = manor.host_node_id
+			var cur_node: String = WorldGraph.resolve_node_alias(manor.host_node_id, world_graph)
 			for eid_v: Variant in path_arr:
 				var eid: String = str(eid_v)
 				if not world_graph.has_edge(eid):
@@ -500,8 +500,9 @@ func _validate_stage5_domain(
 		"CMD_PLACE_MARKET_ORDER":
 			if manor == null or world_graph == null:
 				return {"ok": false, "error_code": DtoSchemas.ERR_INVALID_STATE, "reason": "Missing manor or world_graph"}
-			var nid: String = str(args.get("node_id", manor.host_node_id))
-			if not world_graph.has_node(nid):
+			var raw_mkt_nid: String = str(args.get("node_id", manor.host_node_id)).strip_edges()
+			var nid: String = WorldGraph.map_known_node_alias(raw_mkt_nid)
+			if nid.is_empty() or not world_graph.has_node(nid):
 				return {"ok": false, "error_code": DtoSchemas.ERR_INVALID_STATE, "reason": "Unknown market node_id"}
 			var comm: String = str(args.get("commodity", ""))
 			var side: String = str(args.get("side", ""))

@@ -63,7 +63,8 @@ const STARTING_PROVINCES: Dictionary = {
 	"JING_ZHOU": "xiangyang",
 	"YANG_ZHOU": "jianye",
 	"YI_ZHOU": "chengdu",
-	"YONG_LIANG": "changan"
+	"YONG_LIANG": "changan",
+	"YONG_ZHOU": "changan"
 }
 
 const RHYTHM_SCHEDULES: Dictionary = {

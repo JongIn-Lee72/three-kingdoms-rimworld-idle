@@ -299,6 +299,29 @@ func _ingest_unit_spec(ud: Dictionary) -> void:
 	}
 
 
+const NODE_ID_ALIASES: Dictionary = {
+	"ye": "ye_county",
+	"jixian": "jicheng",
+	"puyang": "chenliu"
+}
+
+
+static func map_known_node_alias(node_id: String) -> String:
+	var clean: String = node_id.strip_edges()
+	return str(NODE_ID_ALIASES.get(clean, clean))
+
+
+static func resolve_node_alias(node_id: String, wg: WorldGraph = null) -> String:
+	var clean: String = map_known_node_alias(node_id)
+	if clean.is_empty():
+		return "xuchang"
+	if wg != null and wg.has_node(clean):
+		return clean
+	if wg != null and not wg.has_node(clean):
+		return "xuchang" if wg.has_node("xuchang") else (wg.get_node_ids()[0] if not wg.get_node_ids().is_empty() else clean)
+	return clean
+
+
 func has_node(node_id: String) -> bool:
 	return nodes.has(node_id)
 

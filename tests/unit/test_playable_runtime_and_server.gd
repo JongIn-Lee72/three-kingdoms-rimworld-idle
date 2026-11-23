@@ -402,6 +402,9 @@ func test_headless_server_crash_recovery_pre_and_post_snapshot_wal_replay() -> v
 	var pre_db: String = _track_scratch_file(SCRATCH_DIR + "/test_pre_wal.db")
 	var pre_wal: String = _track_scratch_file(SCRATCH_DIR + "/test_pre_wal.jsonl")
 	var pre_snap: String = _track_scratch_file(SCRATCH_DIR + "/test_pre_wal_snap.json")
+	for stale_p: String in [pre_db, pre_wal, pre_snap, pre_db + ".tmp", pre_wal + ".tmp", pre_snap + ".tmp"]:
+		if FileAccess.file_exists(stale_p):
+			var _rm_stale: Error = DirAccess.remove_absolute(stale_p)
 	var pre_port1: int = _find_available_port(19220, 40)
 
 	var srv_a1: HeadlessServerMain = HeadlessServerMain.new()

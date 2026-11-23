@@ -701,3 +701,283 @@ func test_tk3k2_paste_only_modal_rejects_plaintext_json_and_accepts_sealed_token
 	assert_true(_as_bool(srv_create_res.get("accepted", false)), "Server accepted UI-emitted CMD_CREATE_CHARACTER")
 	var _step2: Dictionary = srv.step_micro_tick()
 	assert_true(srv.manors.has("player_01"), "AuthoritativeServer created manor for UI-submitted TK3K2 character")
+
+
+func _find_nodes_of_type(root: Node, target_type: String, out: Array[Node]) -> void:
+	if root == null:
+		return
+	if root.is_class(target_type):
+		out.append(root)
+	for child: Node in root.get_children():
+		_find_nodes_of_type(child, target_type, out)
+
+
+func test_m8_ui_ux_upgrade_split_layouts_onboarding_and_korean_localization() -> void:
+	# 1. AssetRegistry ibelick/ui-skills tokens, flat cards & Korean localization helpers
+	var reg: AssetRegistry = AssetRegistry.new()
+	var card_sb: StyleBoxFlat = reg.build_card_stylebox(false)
+	assert_not_null(card_sb, "build_card_stylebox() returns StyleBoxFlat")
+	assert_eq(card_sb.corner_radius_top_left, 6, "Card corner radius is 6px")
+	var badge_sb: StyleBoxFlat = reg.build_badge_stylebox(AssetRegistry.COLOR_CARD_BG, AssetRegistry.COLOR_GOLD_ACCENT)
+	assert_eq(badge_sb.corner_radius_top_left, 4, "Badge concentric inner corner radius is 4px")
+	assert_eq(AssetRegistry.resource_label_ko("GRAIN"), "군량", "resource_label_ko('GRAIN') -> 군량")
+	assert_eq(AssetRegistry.work_domain_ko("AGRICULTURE"), "둔전·농사", "work_domain_ko('AGRICULTURE') -> 둔전·농사")
+	assert_eq(AssetRegistry.shichen_activity_ko("SLEEP"), "취침", "shichen_activity_ko('SLEEP') -> 취침")
+	assert_eq(AssetRegistry.format_num(12345), "12,345", "format_num formats thousands separator")
+	assert_eq(str(AssetRegistry.building_info_ko("MILITARY_FARM").get("name", "")), "둔전", "building_info_ko('MILITARY_FARM') -> 둔전")
+	assert_eq(str(AssetRegistry.zone_info_ko("ZONE_FARMLAND").get("name", "")), "둔전 농지", "zone_info_ko('ZONE_FARMLAND') -> 둔전 농지")
+
+	# 2. ClientController clean tab titles, onboarding bar & global resource strip
+	var cc: ClientController = ClientController.new()
+	cc.auto_start_live_demo = false
+	var _tracked: Node = _track_ui(cc)
+
+	for ti: int in range(cc.get_tab_count()):
+		var ttitle: String = cc._tab_container.get_tab_title(ti)
+		assert_false(ttitle.contains("_"), "Tab %d title has zero underscores: %s" % [ti, ttitle])
+	assert_eq(cc._tab_container.get_tab_title(0), "1. 장원 경영", "Tab 0 clean Korean title")
+	assert_eq(cc._tab_container.get_tab_title(3), "4. 정청 · 거래소 · 조보", "Tab 3 clean Korean title")
+	assert_eq(cc._onboarding_step_btns.size(), 5, "5-step onboarding bar has 5 clickable step buttons")
+	assert_eq(cc._global_res_labels.size(), 8, "Global persistent 8-resource strip has 8 numeric labels")
+
+	var _boot: Dictionary = cc.start_local_demo(18401)
+	var grain_lbl: Label = cc._global_res_labels["GRAIN"]
+	assert_ne(grain_lbl.text, "0", "Global resource strip updated with live GRAIN count: " + grain_lbl.text)
+
+	# 3. All 4 views use 2-column HSplitContainer layouts & zero raw CMD_* button labels
+	var views: Array[Control] = [cc.manor_view, cc.priority_view, cc.macro_view, cc.court_hud]
+	for vi: int in range(views.size()):
+		var v: Control = views[vi]
+		var splits: Array[Node] = []
+		_find_nodes_of_type(v, "HSplitContainer", splits)
+		assert_gte(splits.size(), 1, "View %d contains HSplitContainer 2-column layout" % vi)
+
+		var buttons: Array[Node] = []
+		_find_nodes_of_type(v, "Button", buttons)
+		for bn: Node in buttons:
+			if bn is Button:
+				var btn: Button = bn
+				assert_false(btn.text.contains("CMD_"), "View %d button hides raw CMD_* string: %s" % [vi, btn.text])
+
+	# 4. Metadata-backed OptionButtons emit canonical protocol keys while showing Korean text
+	var emitted: Array[Dictionary] = []
+	cc.command_envelope_ready.connect(func(env: Dictionary) -> void: emitted.append(env))
+	cc.court_hud._on_place_order_pressed()
+	cc.macro_view._on_dispatch_pressed()
+	cc.priority_view._on_apply_doctrine_pressed()
+	assert_eq(emitted.size(), 3, "Metadata-backed UI submit handlers emit 3 envelopes")
+	var args0: Dictionary = _as_dict(emitted[0].get("args", {}))
+	var args1: Dictionary = _as_dict(emitted[1].get("args", {}))
+	var args2: Dictionary = _as_dict(emitted[2].get("args", {}))
+	assert_eq(str(args0.get("commodity", "")), "GRAIN", "Market OptionButton emits canonical commodity GRAIN")
+	assert_eq(str(args0.get("side", "")), "BID", "Market OptionButton emits canonical side BID")
+	assert_eq(str(args1.get("unit_type", "")), "ARMY", "Macro OptionButton emits canonical unit_type ARMY")
+	assert_eq(str(args2.get("engagement_stance", "")), "DEFENSIVE_HOLD", "Doctrine OptionButton emits canonical stance")
+
+	# 5. Iteration 2 regression: same-frame remove_child() keeps dynamic box child counts exact
+	cc.macro_view.apply_snapshot({
+		"armies": {"a_1": {"unit_type": "ARMY", "faction_id": "fac_han", "current_node_id": "xuchang", "troop_count": 50}},
+		"rallies": {"r_1": {"target_node_id": "luoyang", "status": "RALLYING", "participant_count": 1}}
+	})
+	cc.macro_view.apply_snapshot({
+		"armies": {"a_1": {"unit_type": "ARMY", "faction_id": "fac_han", "current_node_id": "xuchang", "troop_count": 50}},
+		"rallies": {"r_1": {"target_node_id": "luoyang", "status": "RALLYING", "participant_count": 1}}
+	})
+	assert_eq(cc.macro_view._armies_box.get_child_count(), cc.macro_view._cached_armies.size(), "Macro _armies_box child count exact immediately on re-apply")
+	assert_eq(cc.macro_view._rallies_box.get_child_count(), cc.macro_view._cached_rallies.size(), "Macro _rallies_box child count exact immediately on re-apply")
+
+	cc.court_hud.apply_snapshot({
+		"orders": {"o_1": {"commodity": "GRAIN", "side": "BID", "price_bp": 1000, "remaining_qty": 10}},
+		"inbox_decisions": [{"decision_id": "d_1", "event_type": "IMPERIAL_LEVY", "deadline_tick": 99, "options": ["PAY_LEVY"]}]
+	})
+	cc.court_hud.apply_snapshot({
+		"orders": {"o_1": {"commodity": "GRAIN", "side": "BID", "price_bp": 1000, "remaining_qty": 10}},
+		"inbox_decisions": [{"decision_id": "d_1", "event_type": "IMPERIAL_LEVY", "deadline_tick": 99, "options": ["PAY_LEVY"]}]
+	})
+	assert_eq(cc.court_hud._orders_box.get_child_count(), cc.court_hud._cached_orders.size(), "Court _orders_box child count exact immediately on re-apply")
+	assert_eq(cc.court_hud._inbox_box.get_child_count(), 1, "Court _inbox_box child count exact immediately on re-apply")
+
+	# 6. Iteration 2 regression: back-to-back Tab 1 preset clicks stay within TOKEN_BUCKET_BURST=10
+	cc.step_demo_ticks(4)
+	cc.priority_view._on_preset_pressed("DOMESTIC")
+	cc.priority_view._on_preset_pressed("WAR")
+	cc.priority_view._on_preset_pressed("REST")
+	cc.step_demo_ticks(1)
+	assert_contains(cc._cmd_feedback_label.text, "수락", "Back-to-back DOMESTIC+WAR+REST presets accepted: " + cc._cmd_feedback_label.text)
+	assert_false(cc._cmd_feedback_label.text.contains(DtoSchemas.ERR_RATE_LIMITED), "Back-to-back presets never trip ERR_RATE_LIMITED")
+
+	# 7. Iteration 2 regression: all 6 Tab 3 provinces map to valid WorldGraph host nodes and dispatch ARMY cleanly
+	var expected_nodes_by_prov: Dictionary = {
+		"YU_ZHOU": "xuchang",
+		"XU_ZHOU": "xiapi",
+		"JI_ZHOU": "ye_county",
+		"YI_ZHOU": "chengdu",
+		"YANG_ZHOU": "jianye",
+		"YONG_LIANG": "changan"
+	}
+	assert_eq(cc.court_hud._cc_province_opt.item_count, 6, "Tab 3 province dropdown has 6 provinces")
+	cc.court_hud._cc_mode_opt.select(0)  # INTERVIEW_ONLY
+	for pi: int in range(cc.court_hud._cc_province_opt.item_count):
+		var prov_id: String = str(cc.court_hud._cc_province_opt.get_item_metadata(pi))
+		assert_true(expected_nodes_by_prov.has(prov_id), "Province dropdown uses canonical ID: " + prov_id)
+		cc.court_hud._cc_province_opt.select(pi)
+		cc.court_hud._on_submit_cc_pressed()
+		cc.step_demo_ticks(1)
+		var expected_nid: String = str(expected_nodes_by_prov[prov_id])
+		assert_eq(cc.macro_view._host_node_id, expected_nid, "Province %s maps to valid host_node_id %s" % [prov_id, expected_nid])
+		assert_true(cc.macro_view._world_graph.has_node(cc.macro_view._host_node_id), "host_node_id exists in WorldGraph: " + cc.macro_view._host_node_id)
+		var target_nid: String = "luoyang" if cc.macro_view._host_node_id != "luoyang" else "xuchang"
+		cc.macro_view._select_map_node(target_nid, true)
+		cc.macro_view._on_dispatch_pressed()
+		cc.step_demo_ticks(1)
+		assert_contains(cc._cmd_feedback_label.text, "수락", "Dispatch after %s creation accepted: %s" % [prov_id, cc._cmd_feedback_label.text])
+		assert_false(cc._cmd_feedback_label.text.contains(DtoSchemas.ERR_SCHEMA), "Dispatch after %s creation has zero ERR_SCHEMA" % prov_id)
+		cc.step_demo_ticks(4)
+
+	# 8. Iteration 3 regressions:
+	# (a) CMD_PLACE_MARKET_ORDER rejects empty & bogus node_id with ERR_INVALID_STATE and zero COIN escrow loss,
+	#     while normalizing known alias "ye" -> "ye_county" identically on validator & server.
+	var iso_srv: AuthoritativeServer = AuthoritativeServer.new(18401, "ST_SIMA_QIAN")
+	var _iso_reg: Dictionary = iso_srv.register_session("peer_iso", "p_iso", "IsoLord")
+	var _iso_create: Dictionary = iso_srv.submit_raw_command("peer_iso", {
+		"v": 1, "cmd_seq": 1, "client_tick": 0, "player_id": "p_iso",
+		"cmd_type": "CMD_CREATE_CHARACTER",
+		"args": {"name": "IsoLord", "mode": "INTERVIEW_ONLY", "province_override": "JI_ZHOU", "interview_answers": [0, 1, 2, 0, 1, 2, 0, 1]}
+	})
+	var _iso_t1: Dictionary = iso_srv.step_micro_tick()
+	var iso_manor: ManorState = iso_srv.manors["p_iso"]
+	var _iso_coin_add: int = iso_manor.add_resource("COIN", 500)
+	var iso_coin_before: int = iso_manor.get_resource("COIN")
+
+	var res_empty: Dictionary = iso_srv.submit_raw_command("peer_iso", {
+		"v": 1, "cmd_seq": 2, "client_tick": 1, "player_id": "p_iso",
+		"cmd_type": "CMD_PLACE_MARKET_ORDER",
+		"args": {"node_id": "", "commodity": "GRAIN", "side": "BID", "price_bp": 1000, "quantity": 100}
+	})
+	var _iso_t2: Dictionary = iso_srv.step_micro_tick()
+	assert_false(_as_bool(res_empty.get("accepted", true), true), "Validator rejects empty market node_id")
+	assert_eq(str(_as_dict(res_empty.get("receipt", {})).get("error_code", "")), DtoSchemas.ERR_INVALID_STATE, "Empty market node_id returns ERR_INVALID_STATE")
+	assert_eq(iso_manor.get_resource("COIN"), iso_coin_before, "Zero COIN escrow lost when empty market node_id is rejected")
+	assert_eq(iso_srv.regional_market.orders.size(), 0, "Zero market orders created for empty node_id")
+
+	var res_bogus: Dictionary = iso_srv.submit_raw_command("peer_iso", {
+		"v": 1, "cmd_seq": 3, "client_tick": 2, "player_id": "p_iso",
+		"cmd_type": "CMD_PLACE_MARKET_ORDER",
+		"args": {"node_id": "bogus_node_999", "commodity": "GRAIN", "side": "BID", "price_bp": 1000, "quantity": 100}
+	})
+	var _iso_t3: Dictionary = iso_srv.step_micro_tick()
+	assert_false(_as_bool(res_bogus.get("accepted", true), true), "Validator rejects bogus market node_id")
+	assert_eq(str(_as_dict(res_bogus.get("receipt", {})).get("error_code", "")), DtoSchemas.ERR_INVALID_STATE, "Unknown market node_id returns ERR_INVALID_STATE")
+	assert_eq(iso_manor.get_resource("COIN"), iso_coin_before, "Zero COIN escrow lost when bogus market node_id is rejected")
+	assert_eq(iso_srv.regional_market.orders.size(), 0, "Zero market orders created for bogus node_id")
+
+	var res_ye: Dictionary = iso_srv.submit_raw_command("peer_iso", {
+		"v": 1, "cmd_seq": 4, "client_tick": 3, "player_id": "p_iso",
+		"cmd_type": "CMD_PLACE_MARKET_ORDER",
+		"args": {"node_id": "ye", "commodity": "GRAIN", "side": "BID", "price_bp": 1000, "quantity": 50}
+	})
+	var _iso_t4: Dictionary = iso_srv.step_micro_tick()
+	assert_true(_as_bool(res_ye.get("accepted", false), false), "Validator accepts alias market node_id 'ye'")
+	assert_eq(iso_srv.regional_market.orders.size(), 1, "Alias 'ye' market order created")
+	var iso_oid: String = "ord_%06d" % (iso_srv.regional_market._next_order_seq - 1)
+	assert_eq(str(iso_srv.regional_market.get_order(iso_oid).get("node_id", "")), "ye_county", "Server normalized market order node_id 'ye' -> 'ye_county'")
+
+	# Also verify ClientController UI receipt feedback for empty/bogus/alias market orders
+	var _mkt_empty_env: Dictionary = cc.package_command("CMD_PLACE_MARKET_ORDER", {
+		"node_id": "", "commodity": "GRAIN", "side": "BID", "price_bp": 1000, "quantity": 100
+	})
+	cc.step_demo_ticks(1)
+	assert_contains(cc._cmd_feedback_label.text, DtoSchemas.ERR_INVALID_STATE, "UI toast shows ERR_INVALID_STATE for empty market node_id")
+
+	var _mkt_bogus_env: Dictionary = cc.package_command("CMD_PLACE_MARKET_ORDER", {
+		"node_id": "bogus_node_999", "commodity": "GRAIN", "side": "BID", "price_bp": 1000, "quantity": 100
+	})
+	cc.step_demo_ticks(1)
+	assert_contains(cc._cmd_feedback_label.text, DtoSchemas.ERR_INVALID_STATE, "UI toast shows ERR_INVALID_STATE for bogus market node_id")
+
+	var _mkt_ye_env: Dictionary = cc.package_command("CMD_PLACE_MARKET_ORDER", {
+		"node_id": "ye", "commodity": "GRAIN", "side": "BID", "price_bp": 1000, "quantity": 50
+	})
+	cc.step_demo_ticks(1)
+	assert_contains(cc._cmd_feedback_label.text, "수락", "UI toast accepts alias market node_id 'ye': " + cc._cmd_feedback_label.text)
+
+	# (b) MacroMapView.set_host_node_id() syncs _target_node_opt dropdown when shifting away from new host
+	cc.macro_view.set_host_node_id("luoyang")
+	cc.macro_view._select_map_node("xuchang", true)
+	assert_eq(cc.macro_view._get_selected_target_node_id(), "xuchang", "Dropdown initially synced to xuchang")
+	cc.macro_view.set_host_node_id("xuchang")
+	assert_eq(cc.macro_view._selected_node_id, "luoyang", "set_host_node_id('xuchang') shifts _selected_node_id to luoyang")
+	assert_eq(cc.macro_view._get_selected_target_node_id(), "luoyang", "set_host_node_id('xuchang') syncs _target_node_opt dropdown to luoyang")
+	cc.macro_view.apply_snapshot({"nodes": {"xuchang": cc.macro_view._world_graph.get_node("xuchang")}})
+	assert_eq(cc.macro_view._selected_node_id, "luoyang", "Subsequent apply_snapshot preserves shifted target luoyang")
+	cc.step_demo_ticks(4)
+	cc.macro_view._on_dispatch_pressed()
+	cc.step_demo_ticks(1)
+	assert_contains(cc._cmd_feedback_label.text, "수락", "Dispatch succeeds after host shift without manual re-select: " + cc._cmd_feedback_label.text)
+
+	# (c) Toggling WAR -> DOMESTIC -> WAR + REST back-to-back in 1 tick stays <= TOKEN_BUCKET_BURST (10)
+	cc.step_demo_ticks(4)
+	cc.priority_view._on_preset_pressed("DOMESTIC")
+	cc.step_demo_ticks(4)
+	cc.priority_view._on_preset_pressed("WAR")
+	cc.priority_view._on_preset_pressed("DOMESTIC")
+	cc.priority_view._on_preset_pressed("WAR")
+	cc.priority_view._on_preset_pressed("REST")
+	cc.step_demo_ticks(1)
+	assert_contains(cc._cmd_feedback_label.text, "수락", "3-toggle WAR->DOMESTIC->WAR+REST burst accepted: " + cc._cmd_feedback_label.text)
+	assert_false(cc._cmd_feedback_label.text.contains(DtoSchemas.ERR_RATE_LIMITED), "3-toggle WAR->DOMESTIC->WAR+REST never trips ERR_RATE_LIMITED")
+
+	# 9. Iteration 4 regressions:
+	# (a) Fresh ClientController.start_local_demo(18401) with 0 prior clicks or ticks accepts immediate
+	#     WAR -> DOMESTIC -> WAR -> REST and DOMESTIC -> WAR -> DOMESTIC -> REST bursts with zero ERR_RATE_LIMITED.
+	var cc_fresh_war: ClientController = ClientController.new()
+	cc_fresh_war.auto_start_live_demo = false
+	var _tracked_war: Node = _track_ui(cc_fresh_war)
+	var _boot_war: Dictionary = cc_fresh_war.start_local_demo(18401)
+	cc_fresh_war.priority_view._on_preset_pressed("WAR")
+	cc_fresh_war.priority_view._on_preset_pressed("DOMESTIC")
+	cc_fresh_war.priority_view._on_preset_pressed("WAR")
+	cc_fresh_war.priority_view._on_preset_pressed("REST")
+	cc_fresh_war.step_demo_ticks(1)
+	assert_contains(cc_fresh_war._cmd_feedback_label.text, "수락", "Fresh demo immediate WAR->DOMESTIC->WAR->REST accepted: " + cc_fresh_war._cmd_feedback_label.text)
+	assert_false(cc_fresh_war._cmd_feedback_label.text.contains(DtoSchemas.ERR_RATE_LIMITED), "Fresh demo immediate WAR->DOMESTIC->WAR->REST has zero ERR_RATE_LIMITED")
+
+	var cc_fresh_dom: ClientController = ClientController.new()
+	cc_fresh_dom.auto_start_live_demo = false
+	var _tracked_dom: Node = _track_ui(cc_fresh_dom)
+	var _boot_dom: Dictionary = cc_fresh_dom.start_local_demo(18401)
+	cc_fresh_dom.priority_view._on_preset_pressed("DOMESTIC")
+	cc_fresh_dom.priority_view._on_preset_pressed("WAR")
+	cc_fresh_dom.priority_view._on_preset_pressed("DOMESTIC")
+	cc_fresh_dom.priority_view._on_preset_pressed("REST")
+	cc_fresh_dom.step_demo_ticks(1)
+	assert_contains(cc_fresh_dom._cmd_feedback_label.text, "수락", "Fresh demo immediate DOMESTIC->WAR->DOMESTIC->REST accepted: " + cc_fresh_dom._cmd_feedback_label.text)
+	assert_false(cc_fresh_dom._cmd_feedback_label.text.contains(DtoSchemas.ERR_RATE_LIMITED), "Fresh demo immediate DOMESTIC->WAR->DOMESTIC->REST has zero ERR_RATE_LIMITED")
+
+	# (b) Fresh ClientController.start_local_demo(18401) where _host_node_id == "xuchang":
+	#     pre-selecting each province's own node (starting with YU_ZHOU -> "xuchang") before character creation
+	#     must shift both _selected_node_id and _get_selected_target_node_id() away from expected_nid, survive
+	#     apply_snapshot(), and dispatch cleanly with zero ERR_SCHEMA.
+	var cc_map: ClientController = ClientController.new()
+	cc_map.auto_start_live_demo = false
+	var _tracked_map: Node = _track_ui(cc_map)
+	var _boot_map: Dictionary = cc_map.start_local_demo(18401)
+	assert_eq(cc_map.macro_view._host_node_id, "xuchang", "Fresh demo starts with host_node_id == xuchang")
+	cc_map.court_hud._cc_mode_opt.select(0)  # INTERVIEW_ONLY
+	for pi2: int in range(cc_map.court_hud._cc_province_opt.item_count):
+		var prov_id2: String = str(cc_map.court_hud._cc_province_opt.get_item_metadata(pi2))
+		var expected_nid2: String = str(expected_nodes_by_prov[prov_id2])
+		cc_map.macro_view._select_map_node(expected_nid2, true)
+		assert_eq(cc_map.macro_view._selected_node_id, expected_nid2, "Pre-selected map node == %s before %s creation" % [expected_nid2, prov_id2])
+		cc_map.court_hud._cc_province_opt.select(pi2)
+		cc_map.court_hud._on_submit_cc_pressed()
+		cc_map.step_demo_ticks(1)
+		cc_map.macro_view.apply_snapshot({"nodes": {expected_nid2: cc_map.macro_view._world_graph.get_node(expected_nid2)}})
+		assert_eq(cc_map.macro_view._host_node_id, expected_nid2, "Host node updated to %s for %s" % [expected_nid2, prov_id2])
+		assert_ne(cc_map.macro_view._selected_node_id, expected_nid2, "Target _selected_node_id shifted away from %s for %s" % [expected_nid2, prov_id2])
+		assert_ne(cc_map.macro_view._get_selected_target_node_id(), expected_nid2, "Dropdown target shifted away from %s for %s" % [expected_nid2, prov_id2])
+		cc_map.macro_view._on_dispatch_pressed()
+		cc_map.step_demo_ticks(1)
+		assert_contains(cc_map._cmd_feedback_label.text, "수락", "Dispatch after pre-selecting %s (%s) accepted: %s" % [prov_id2, expected_nid2, cc_map._cmd_feedback_label.text])
+		assert_false(cc_map._cmd_feedback_label.text.contains(DtoSchemas.ERR_SCHEMA), "Dispatch after pre-selecting %s (%s) has zero ERR_SCHEMA" % [prov_id2, expected_nid2])
+		cc_map.step_demo_ticks(4)

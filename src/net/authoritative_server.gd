@@ -406,6 +406,7 @@ func _execute_validated_command(peer_id: Variant, env: Dictionary) -> Dictionary
 			var avatar_v: Variant = c_res.get("avatar", null)
 			if manor_v is ManorState:
 				var m_new: ManorState = manor_v
+				m_new.host_node_id = WorldGraph.resolve_node_alias(m_new.host_node_id, world_graph)
 				manors[player_id] = m_new
 				if player_accounts.has(player_id):
 					var acct: Dictionary = player_accounts[player_id]
@@ -525,20 +526,26 @@ func _execute_validated_command(peer_id: Variant, env: Dictionary) -> Dictionary
 			var manor: ManorState = _get_manor(player_id)
 			if manor == null:
 				return {"ok": false, "error_code": DtoSchemas.ERR_INVALID_STATE}
-			var nid: String = str(args.get("node_id", manor.host_node_id))
+			var nid: String = WorldGraph.map_known_node_alias(str(args.get("node_id", manor.host_node_id)).strip_edges())
 			var comm: String = str(args.get("commodity", "GRAIN"))
 			var side: String = str(args.get("side", "BID"))
 			var price_bp: int = _to_int(args.get("price_bp", 1000), 1000)
 			var qty: int = _to_int(args.get("quantity", 1), 1)
+			var coin_escrow: int = 0
 			if side == "BID":
 				@warning_ignore("integer_division")
-				var coin_escrow: int = maxi(1, (price_bp * qty) / 1000)
+				coin_escrow = maxi(1, (price_bp * qty) / 1000)
 				if not manor.try_spend_resource("COIN", coin_escrow):
 					return {"ok": false, "error_code": DtoSchemas.ERR_INSUFFICIENT_RESOURCE}
 			else:
 				if not manor.try_spend_resource(comm, qty):
 					return {"ok": false, "error_code": DtoSchemas.ERR_INSUFFICIENT_RESOURCE}
 			var m_res: Dictionary = regional_market.place_order(nid, player_id, comm, side, price_bp, qty, tick_id)
+			if not _to_bool(m_res.get("ok", false), false):
+				if side == "BID":
+					var _rc: int = manor.add_resource("COIN", coin_escrow)
+				else:
+					var _rg: int = manor.add_resource(comm, qty)
 			return m_res
 
 		"CMD_CANCEL_MARKET_ORDER":

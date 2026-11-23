@@ -28,11 +28,14 @@ const PRISONER_OPTIONS: Array[String] = [
 var _assets: AssetRegistry = null
 var _section_panels_slate: Array[PanelContainer] = []
 var _section_panels_gold: Array[PanelContainer] = []
+var _card_panels: Array[PanelContainer] = []
 var _prio_icon: TextureRect = null
 var _sched_icon: TextureRect = null
 var _doctrine_icon: TextureRect = null
 
 var _pawn_selector: OptionButton = null
+var _pawn_status_label: Label = null
+var _ration_summary_label: Label = null
 var _priority_buttons: Dictionary = {}   # domain -> Array[Button]
 var _schedule_selectors: Array[OptionButton] = []
 var _stance_opt: OptionButton = null
@@ -78,113 +81,225 @@ func set_asset_registry(reg: AssetRegistry) -> void:
 	_assets = reg
 	if _assets == null:
 		return
-	var slate_sb: StyleBoxTexture = _assets.build_panel_stylebox(false)
-	var gold_sb: StyleBoxTexture = _assets.build_panel_stylebox(true)
-	for p_slate: PanelContainer in _section_panels_slate:
-		if p_slate != null:
-			p_slate.add_theme_stylebox_override("panel", slate_sb)
-	for p_gold: PanelContainer in _section_panels_gold:
-		if p_gold != null:
-			p_gold.add_theme_stylebox_override("panel", gold_sb)
+	var card_sb: StyleBoxFlat = _assets.build_card_stylebox(false, AssetRegistry.COLOR_SUBTLE_BORDER)
+	for p_card: PanelContainer in _card_panels:
+		if p_card != null:
+			p_card.add_theme_stylebox_override("panel", card_sb)
 	if _prio_icon != null:
 		_prio_icon.texture = _assets.get_zone_tile("ZONE_WORKSHOP")
 	if _sched_icon != null:
 		_sched_icon.texture = _assets.get_resource_icon("HERBS_WINE")
 	if _doctrine_icon != null:
 		_doctrine_icon.texture = _assets.get_resource_icon("WEAPONS")
+	if _schedule_apply_btn != null:
+		_assets.apply_button_variant(_schedule_apply_btn, "primary")
+	if _doctrine_apply_btn != null:
+		_assets.apply_button_variant(_doctrine_apply_btn, "primary")
 
 
-func _make_section_panel(parent: VBoxContainer, use_gold: bool) -> VBoxContainer:
+func _make_card_panel(parent: Control, elevated: bool = false, accent: Color = AssetRegistry.COLOR_SUBTLE_BORDER) -> VBoxContainer:
 	var panel: PanelContainer = PanelContainer.new()
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var sb: StyleBoxFlat = _assets.build_card_stylebox(elevated, accent) if _assets != null else StyleBoxFlat.new()
+	if _assets == null:
+		sb.bg_color = AssetRegistry.COLOR_CARD_ELEVATED if elevated else AssetRegistry.COLOR_CARD_BG
+		sb.border_color = accent
+		sb.set_border_width_all(1)
+		sb.set_corner_radius_all(6)
+		sb.content_margin_left = 10.0
+		sb.content_margin_right = 10.0
+		sb.content_margin_top = 8.0
+		sb.content_margin_bottom = 8.0
+	panel.add_theme_stylebox_override("panel", sb)
 	var inner: VBoxContainer = VBoxContainer.new()
+	inner.add_theme_constant_override("separation", 6)
 	panel.add_child(inner)
 	parent.add_child(panel)
-	if use_gold:
-		_section_panels_gold.append(panel)
-	else:
-		_section_panels_slate.append(panel)
+	_card_panels.append(panel)
 	return inner
 
 
 func _make_header_with_icon(parent: VBoxContainer, title_text: String) -> TextureRect:
 	var row: HBoxContainer = HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
 	var icon: TextureRect = TextureRect.new()
-	icon.custom_minimum_size = Vector2(20, 20)
+	icon.custom_minimum_size = Vector2(18, 18)
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	row.add_child(icon)
 	var hdr: Label = Label.new()
 	hdr.text = title_text
+	AssetRegistry.apply_text_role(hdr, "section")
 	row.add_child(hdr)
 	parent.add_child(row)
 	return icon
 
 
 func _build_ui() -> void:
-	var scroll: ScrollContainer = ScrollContainer.new()
-	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(scroll)
+	var outer: VBoxContainer = VBoxContainer.new()
+	outer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	outer.add_theme_constant_override("separation", 6)
+	add_child(outer)
 
-	var root: VBoxContainer = VBoxContainer.new()
-	root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.add_child(root)
-
-	var top_sec: VBoxContainer = _make_section_panel(root, false)
-	var title: Label = Label.new()
-	title.text = "업무 우선순위 (0..4) & 십이지시 일과표 & 상시 교전 수칙"
-	top_sec.add_child(title)
-
+	# Top Pawn Selector, Status Badge & Quick Presets
+	var top_sec: VBoxContainer = _make_card_panel(outer, true, AssetRegistry.COLOR_GOLD_ACCENT)
 	var pawn_row: HBoxContainer = HBoxContainer.new()
+	pawn_row.add_theme_constant_override("separation", 8)
+	top_sec.add_child(pawn_row)
+
 	var pawn_lbl: Label = Label.new()
 	pawn_lbl.text = "대상 가신:"
+	AssetRegistry.apply_text_role(pawn_lbl, "body")
 	pawn_row.add_child(pawn_lbl)
 
 	_pawn_selector = OptionButton.new()
+	_pawn_selector.custom_minimum_size = Vector2(210, 0)
 	_pawn_selector.item_selected.connect(_on_pawn_selected)
 	pawn_row.add_child(_pawn_selector)
-	top_sec.add_child(pawn_row)
 
-	# 7-domain 0..4 priority buttons
-	var prio_sec: VBoxContainer = _make_section_panel(root, false)
-	_prio_icon = _make_header_with_icon(prio_sec, "[7대 업무 우선순위 매트릭스 (0=금지, 1=최우선..4=후순위)]")
+	_pawn_status_label = Label.new()
+	_pawn_status_label.text = "직무: 대기 · 기분 50 · 충성 50% · 건강"
+	_pawn_status_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	AssetRegistry.apply_text_role(_pawn_status_label, "muted")
+	pawn_row.add_child(_pawn_status_label)
+
+	var preset_lbl: Label = Label.new()
+	preset_lbl.text = "빠른 프리셋:"
+	AssetRegistry.apply_text_role(preset_lbl, "caption")
+	pawn_row.add_child(preset_lbl)
+
+	var preset_defs: Array[Dictionary] = [
+		{"id": "DOMESTIC", "label": "내정 집중"},
+		{"id": "WAR", "label": "전시 대비"},
+		{"id": "REST", "label": "휴양 회복"}
+	]
+	for pdef: Dictionary in preset_defs:
+		var pbtn: Button = Button.new()
+		pbtn.text = str(pdef["label"])
+		pbtn.pressed.connect(_on_preset_pressed.bind(str(pdef["id"])))
+		pawn_row.add_child(pbtn)
+
+	# 2-Column HSplitContainer Dashboard
+	var split: HSplitContainer = HSplitContainer.new()
+	split.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	split.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	split.split_offset = 0
+	outer.add_child(split)
+
+	# LEFT PANE: 7-Domain Priority Matrix + Ration Summary Card
+	var left_scroll: ScrollContainer = ScrollContainer.new()
+	left_scroll.custom_minimum_size = Vector2(450, 0)
+	left_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	left_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	left_scroll.size_flags_stretch_ratio = 0.80
+	split.add_child(left_scroll)
+
+	var left_col: VBoxContainer = VBoxContainer.new()
+	left_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	left_col.add_theme_constant_override("separation", 8)
+	left_scroll.add_child(left_col)
+
+	var prio_sec: VBoxContainer = _make_card_panel(left_col, false)
+	_prio_icon = _make_header_with_icon(prio_sec, "7대 업무 우선순위 매트릭스")
+
+	var legend_lbl: Label = Label.new()
+	legend_lbl.text = "1 최우선(홍금) · 2 높음(호박) · 3 보통(청자) · 4 낮음(연록) · 0 제외(비활성)"
+	AssetRegistry.apply_text_role(legend_lbl, "caption")
+	prio_sec.add_child(legend_lbl)
+
+	var hdr_row: HBoxContainer = HBoxContainer.new()
+	hdr_row.add_theme_constant_override("separation", 6)
+	var dom_hdr: Label = Label.new()
+	dom_hdr.text = "업무 영역"
+	dom_hdr.custom_minimum_size = Vector2(130, 0)
+	AssetRegistry.apply_text_role(dom_hdr, "caption")
+	hdr_row.add_child(dom_hdr)
+	var prio_hdr_names: Array[String] = ["제외(0)", "최우선(1)", "높음(2)", "보통(3)", "낮음(4)"]
+	for htxt: String in prio_hdr_names:
+		var hl: Label = Label.new()
+		hl.text = htxt
+		hl.custom_minimum_size = Vector2(54, 0)
+		hl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		AssetRegistry.apply_text_role(hl, "caption")
+		hdr_row.add_child(hl)
+	prio_sec.add_child(hdr_row)
 
 	for domain: String in PawnEntity.WORK_DOMAINS:
 		var row: HBoxContainer = HBoxContainer.new()
+		row.add_theme_constant_override("separation", 6)
 		var dlbl: Label = Label.new()
-		dlbl.text = domain
-		dlbl.custom_minimum_size = Vector2(140, 0)
+		dlbl.text = AssetRegistry.work_domain_ko(domain)
+		dlbl.tooltip_text = "%s (%s)" % [AssetRegistry.work_domain_ko(domain), domain]
+		dlbl.custom_minimum_size = Vector2(130, 0)
+		AssetRegistry.apply_text_role(dlbl, "body")
 		row.add_child(dlbl)
 
 		var btns: Array[Button] = []
 		for prio: int in range(5):
 			var b: Button = Button.new()
 			b.text = str(prio)
+			b.custom_minimum_size = Vector2(54, 30)
 			b.toggle_mode = true
 			b.button_pressed = (prio == 2)
 			b.pressed.connect(_on_priority_pressed.bind(domain, prio))
 			row.add_child(b)
 			btns.append(b)
 		_priority_buttons[domain] = btns
+		_update_priority_button_visuals(domain, 2)
 		prio_sec.add_child(row)
 
-	# 12-ShiChen schedule editor
-	var sched_sec: VBoxContainer = _make_section_panel(root, false)
-	_sched_icon = _make_header_with_icon(sched_sec, "[십이지시(12-ShiChen) 일과표]")
+	# Ration & Wine Policy Summary Card
+	var ration_sec: VBoxContainer = _make_card_panel(left_col, false)
+	var r_title: Label = Label.new()
+	r_title.text = "장원 배급 · 주류 정책 요약"
+	AssetRegistry.apply_text_role(r_title, "section")
+	ration_sec.add_child(r_title)
+
+	_ration_summary_label = Label.new()
+	_ration_summary_label.text = "현재 식량 배급: 표준식(STANDARD) · 명주 배급 활성(호주가 가신 기분 보너스) · 비축 약주: 0"
+	_ration_summary_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	AssetRegistry.apply_text_role(_ration_summary_label, "muted")
+	ration_sec.add_child(_ration_summary_label)
+
+	# RIGHT PANE: 12-ShiChen Schedule (top) + Standing Tactical Doctrine (bottom)
+	var right_scroll: ScrollContainer = ScrollContainer.new()
+	right_scroll.custom_minimum_size = Vector2(560, 0)
+	right_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	right_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	right_scroll.size_flags_stretch_ratio = 1.20
+	split.add_child(right_scroll)
+
+	var right_col: VBoxContainer = VBoxContainer.new()
+	right_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	right_col.add_theme_constant_override("separation", 8)
+	right_scroll.add_child(right_col)
+
+	var sched_sec: VBoxContainer = _make_card_panel(right_col, false)
+	var sched_hdr_row: HBoxContainer = HBoxContainer.new()
+	_sched_icon = _make_header_with_icon(sched_sec, "십이지시(12시진) 일과표")
 
 	var sched_grid: GridContainer = GridContainer.new()
 	sched_grid.columns = 4
+	sched_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sched_grid.add_theme_constant_override("h_separation", 8)
+	sched_grid.add_theme_constant_override("v_separation", 6)
 	sched_sec.add_child(sched_grid)
 
 	for si: int in range(12):
 		var cell: VBoxContainer = VBoxContainer.new()
+		cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		cell.add_theme_constant_override("separation", 2)
 		var slbl: Label = Label.new()
 		slbl.text = SHICHEN_NAMES[si]
+		AssetRegistry.apply_text_role(slbl, "caption")
 		cell.add_child(slbl)
 
 		var opt: OptionButton = OptionButton.new()
-		for act: String in PawnEntity.SHICHEN_ACTIVITIES:
-			opt.add_item(act)
+		opt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		for ai: int in range(PawnEntity.SHICHEN_ACTIVITIES.size()):
+			var act: String = PawnEntity.SHICHEN_ACTIVITIES[ai]
+			opt.add_item(AssetRegistry.shichen_activity_ko(act))
+			opt.set_item_metadata(ai, act)
 		var def_idx: int = PawnEntity.SHICHEN_ACTIVITIES.find(_current_schedule[si])
 		if def_idx >= 0:
 			opt.select(def_idx)
@@ -194,13 +309,15 @@ func _build_ui() -> void:
 		_schedule_selectors.append(opt)
 
 	_schedule_apply_btn = Button.new()
-	_schedule_apply_btn.text = "일과표 전체 적용 (CMD_SET_SCHEDULE)"
+	_schedule_apply_btn.text = "일과표 일괄 적용"
+	_schedule_apply_btn.tooltip_text = "선택한 가신의 12시진 일과표를 서버에 즉시 반영합니다"
 	_schedule_apply_btn.pressed.connect(_on_apply_schedule_pressed)
-	sched_sec.add_child(_schedule_apply_btn)
+	sched_hdr_row.add_child(_schedule_apply_btn)
+	sched_sec.add_child(sched_hdr_row)
 
 	# Standing Tactical Doctrine selector
-	var doc_sec: VBoxContainer = _make_section_panel(root, true)
-	_doctrine_icon = _make_header_with_icon(doc_sec, "[상시 교전 수칙 (Standing Tactical Doctrine)]")
+	var doc_sec: VBoxContainer = _make_card_panel(right_col, true, AssetRegistry.COLOR_GOLD_ACCENT)
+	_doctrine_icon = _make_header_with_icon(doc_sec, "상시 교전 수칙 (원정 · 방어 자동 판단)")
 
 	_stance_opt = _make_option_row(doc_sec, "교전 태세:", STANCE_OPTIONS)
 	_formation_opt = _make_option_row(doc_sec, "기본 진형:", FORMATION_OPTIONS)
@@ -209,30 +326,86 @@ func _build_ui() -> void:
 	_prisoner_opt = _make_option_row(doc_sec, "포로 처우:", PRISONER_OPTIONS)
 
 	_doctrine_apply_btn = Button.new()
-	_doctrine_apply_btn.text = "교전 수칙 저장 (CMD_SET_DOCTRINE)"
+	_doctrine_apply_btn.text = "교전 수칙 저장"
+	_doctrine_apply_btn.tooltip_text = "오프라인 및 원정 시 자동 적용되는 상시 교전 수칙을 저장합니다"
 	_doctrine_apply_btn.pressed.connect(_on_apply_doctrine_pressed)
 	doc_sec.add_child(_doctrine_apply_btn)
 
 
 func _make_option_row(parent: VBoxContainer, label_text: String, items: Array[String]) -> OptionButton:
 	var row: HBoxContainer = HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
 	var lbl: Label = Label.new()
 	lbl.text = label_text
-	lbl.custom_minimum_size = Vector2(140, 0)
+	lbl.custom_minimum_size = Vector2(110, 0)
+	AssetRegistry.apply_text_role(lbl, "muted")
 	row.add_child(lbl)
 
 	var opt: OptionButton = OptionButton.new()
-	for it: String in items:
-		opt.add_item(it)
+	opt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	for i: int in range(items.size()):
+		var it: String = items[i]
+		opt.add_item(AssetRegistry.doctrine_option_ko(it))
+		opt.set_item_metadata(i, it)
 	row.add_child(opt)
 	parent.add_child(row)
 	return opt
 
 
+func _get_selected_pawn_from_selector(index: int) -> String:
+	if _pawn_selector == null or index < 0 or index >= _pawn_selector.item_count:
+		return ""
+	var md: Variant = _pawn_selector.get_item_metadata(index)
+	if md is String and not str(md).is_empty():
+		return str(md)
+	return _pawn_selector.get_item_text(index)
+
+
 func _on_pawn_selected(index: int) -> void:
-	if _pawn_selector != null and index >= 0 and index < _pawn_selector.item_count:
-		_selected_pawn_id = _pawn_selector.get_item_text(index)
+	var pid: String = _get_selected_pawn_from_selector(index)
+	if not pid.is_empty():
+		_selected_pawn_id = pid
 		_refresh_pawn_controls()
+
+
+func _apply_preset_priorities(target_pid: String, targets: Dictionary) -> void:
+	var cur_prios: Dictionary = {}
+	var p_v: Variant = _pawns_cache.get(target_pid, null)
+	if p_v is Dictionary:
+		var pd: Dictionary = p_v
+		var wp_v: Variant = pd.get("work_priorities", null)
+		if wp_v is Dictionary:
+			cur_prios = wp_v
+	for dom: String in PawnEntity.WORK_DOMAINS:
+		if not targets.has(dom):
+			continue
+		var target_prio: int = _to_int(targets[dom], 2)
+		if cur_prios.is_empty() or _to_int(cur_prios.get(dom, -1), -1) != target_prio:
+			set_work_priority_intent(target_pid, dom, target_prio)
+
+
+func _on_preset_pressed(preset_id: String) -> void:
+	var target_pid: String = _selected_pawn_id if not _selected_pawn_id.is_empty() else "player_01_avatar"
+	match preset_id:
+		"DOMESTIC":
+			_apply_preset_priorities(target_pid, {
+				"AGRICULTURE": 1,
+				"PATROL": 3,
+				"TRAINING": 3
+			})
+		"WAR":
+			_apply_preset_priorities(target_pid, {
+				"PATROL": 1,
+				"TRAINING": 1,
+				"AGRICULTURE": 3
+			})
+		"REST":
+			var rest_sched: Array[String] = [
+				"SLEEP", "SLEEP", "SLEEP", "SLEEP",
+				"RECREATION", "WORK", "RECREATION", "WORK",
+				"RECREATION", "RECREATION", "SLEEP", "SLEEP"
+			]
+			set_full_schedule_intent(target_pid, rest_sched)
 
 
 func _on_priority_pressed(domain: String, priority: int) -> void:
@@ -245,6 +418,13 @@ func set_work_priority_intent(pawn_id: String, domain: String, priority: int) ->
 		target_pid = "player_01_avatar"
 	var clamped_prio: int = clampi(priority, 0, 4)
 	_update_priority_button_visuals(domain, clamped_prio)
+	if not _pawns_cache.has(target_pid) or not (_pawns_cache[target_pid] is Dictionary):
+		_pawns_cache[target_pid] = {"work_priorities": {}}
+	var pd_cache: Dictionary = _pawns_cache[target_pid]
+	if not pd_cache.has("work_priorities") or not (pd_cache["work_priorities"] is Dictionary):
+		pd_cache["work_priorities"] = {}
+	var wp_cache: Dictionary = pd_cache["work_priorities"]
+	wp_cache[domain] = clamped_prio
 	intent_emitted.emit("CMD_SET_WORK_PRIORITY", {
 		"pawn_id": target_pid,
 		"domain": domain,
@@ -255,8 +435,15 @@ func set_work_priority_intent(pawn_id: String, domain: String, priority: int) ->
 func _on_schedule_slot_changed(item_idx: int, shichen_idx: int) -> void:
 	if shichen_idx < 0 or shichen_idx >= 12:
 		return
-	if item_idx >= 0 and item_idx < PawnEntity.SHICHEN_ACTIVITIES.size():
-		var act: String = PawnEntity.SHICHEN_ACTIVITIES[item_idx]
+	var act: String = ""
+	if shichen_idx < _schedule_selectors.size():
+		var opt: OptionButton = _schedule_selectors[shichen_idx]
+		var md: Variant = opt.get_item_metadata(item_idx)
+		if md is String and not str(md).is_empty():
+			act = str(md)
+	if act.is_empty() and item_idx >= 0 and item_idx < PawnEntity.SHICHEN_ACTIVITIES.size():
+		act = PawnEntity.SHICHEN_ACTIVITIES[item_idx]
+	if not act.is_empty():
 		_current_schedule[shichen_idx] = act
 		set_schedule_slot_intent(_selected_pawn_id, shichen_idx, act)
 
@@ -294,12 +481,23 @@ func set_full_schedule_intent(pawn_id: String, schedule: Array[String]) -> void:
 	intent_emitted.emit("CMD_SET_SCHEDULE", args)
 
 
+func _get_option_raw_value(opt: OptionButton, fallback_list: Array[String], fallback: String) -> String:
+	if opt == null or opt.selected < 0:
+		return fallback
+	var md: Variant = opt.get_item_metadata(opt.selected)
+	if md is String and not str(md).is_empty():
+		return str(md)
+	if opt.selected < fallback_list.size():
+		return fallback_list[opt.selected]
+	return fallback
+
+
 func _on_apply_doctrine_pressed() -> void:
-	var stance: String = STANCE_OPTIONS[_stance_opt.selected] if _stance_opt.selected >= 0 and _stance_opt.selected < STANCE_OPTIONS.size() else "DEFENSIVE_HOLD"
-	var formation: String = FORMATION_OPTIONS[_formation_opt.selected] if _formation_opt.selected >= 0 and _formation_opt.selected < FORMATION_OPTIONS.size() else "SQUARE_SHIELD"
-	var duel: String = DUEL_OPTIONS[_duel_opt.selected] if _duel_opt.selected >= 0 and _duel_opt.selected < DUEL_OPTIONS.size() else "ACCEPT_IF_ADVANTAGE"
-	var stratagem: String = STRATAGEM_OPTIONS[_stratagem_opt.selected] if _stratagem_opt.selected >= 0 and _stratagem_opt.selected < STRATAGEM_OPTIONS.size() else "FIRE_OR_FLOOD"
-	var prisoner: String = PRISONER_OPTIONS[_prisoner_opt.selected] if _prisoner_opt.selected >= 0 and _prisoner_opt.selected < PRISONER_OPTIONS.size() else "RECRUIT_PERSUADE"
+	var stance: String = _get_option_raw_value(_stance_opt, STANCE_OPTIONS, "DEFENSIVE_HOLD")
+	var formation: String = _get_option_raw_value(_formation_opt, FORMATION_OPTIONS, "SQUARE_SHIELD")
+	var duel: String = _get_option_raw_value(_duel_opt, DUEL_OPTIONS, "ACCEPT_IF_ADVANTAGE")
+	var stratagem: String = _get_option_raw_value(_stratagem_opt, STRATAGEM_OPTIONS, "FIRE_OR_FLOOD")
+	var prisoner: String = _get_option_raw_value(_prisoner_opt, PRISONER_OPTIONS, "RECRUIT_PERSUADE")
 	set_doctrine_intent({
 		"engagement_stance": stance,
 		"formation": formation,
@@ -315,6 +513,33 @@ func set_doctrine_intent(doctrine_patch: Dictionary) -> void:
 	intent_emitted.emit("CMD_SET_DOCTRINE", doctrine_patch.duplicate(true))
 
 
+func _priority_active_style(prio: int) -> StyleBoxFlat:
+	var sb: StyleBoxFlat = StyleBoxFlat.new()
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(4)
+	sb.content_margin_left = 6.0
+	sb.content_margin_right = 6.0
+	sb.content_margin_top = 4.0
+	sb.content_margin_bottom = 4.0
+	match prio:
+		1:
+			sb.bg_color = Color(0.62, 0.19, 0.16, 0.98)
+			sb.border_color = AssetRegistry.COLOR_GOLD_HIGHLIGHT
+		2:
+			sb.bg_color = Color(0.56, 0.38, 0.12, 0.98)
+			sb.border_color = AssetRegistry.COLOR_WARNING_AMBER
+		3:
+			sb.bg_color = Color(0.18, 0.34, 0.46, 0.96)
+			sb.border_color = AssetRegistry.COLOR_INFO_AZURE
+		4:
+			sb.bg_color = Color(0.20, 0.34, 0.24, 0.95)
+			sb.border_color = AssetRegistry.COLOR_SUCCESS_JADE
+		_:
+			sb.bg_color = Color(0.14, 0.13, 0.12, 0.90)
+			sb.border_color = AssetRegistry.COLOR_TEXT_MUTED
+	return sb
+
+
 func _update_priority_button_visuals(domain: String, active_prio: int) -> void:
 	var btns_v: Variant = _priority_buttons.get(domain, null)
 	if btns_v is Array:
@@ -323,7 +548,16 @@ func _update_priority_button_visuals(domain: String, active_prio: int) -> void:
 			var bv: Variant = btns[p]
 			if bv is Button:
 				var b: Button = bv
-				b.set_pressed_no_signal(p == active_prio)
+				var is_active: bool = (p == active_prio)
+				b.set_pressed_no_signal(is_active)
+				if is_active:
+					b.add_theme_stylebox_override("pressed", _priority_active_style(p))
+					b.add_theme_stylebox_override("normal", _priority_active_style(p))
+					b.add_theme_color_override("font_color", AssetRegistry.COLOR_TEXT_PRIMARY)
+				else:
+					b.remove_theme_stylebox_override("pressed")
+					b.remove_theme_stylebox_override("normal")
+					b.remove_theme_color_override("font_color")
 
 
 func _refresh_pawn_controls() -> void:
@@ -331,6 +565,13 @@ func _refresh_pawn_controls() -> void:
 	if not (p_v is Dictionary):
 		return
 	var pd: Dictionary = p_v
+	if _pawn_status_label != null:
+		var job_ko_s: String = AssetRegistry.job_ko(str(pd.get("job", pd.get("current_job", "IDLE"))))
+		var mood_i: int = clampi(_to_int(pd.get("mood", 50), 50), 0, 100)
+		var loy_pct: int = clampi(_to_int(pd.get("loyalty_bp", 5000), 5000) / 100, 0, 100)
+		var mstate_s: String = AssetRegistry.mental_state_ko(str(pd.get("mental_state", "NORMAL")))
+		_pawn_status_label.text = "직무: %s · 기분 %d · 충성 %d%% · 상태: %s" % [job_ko_s, mood_i, loy_pct, mstate_s]
+
 	var wp_v: Variant = pd.get("work_priorities", {})
 	if wp_v is Dictionary:
 		var wp: Dictionary = wp_v
@@ -349,9 +590,15 @@ func _refresh_pawn_controls() -> void:
 					_schedule_selectors[si].select(idx)
 
 
-func _select_option_by_text(opt: OptionButton, text: String) -> void:
+func _select_option_by_raw(opt: OptionButton, raw_val: String) -> void:
+	if opt == null:
+		return
 	for i: int in range(opt.item_count):
-		if opt.get_item_text(i) == text:
+		var md: Variant = opt.get_item_metadata(i)
+		if md is String and str(md) == raw_val:
+			opt.select(i)
+			return
+		if opt.get_item_text(i) == raw_val:
 			opt.select(i)
 			return
 
@@ -381,8 +628,23 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 
 	ordered_ids.sort()
 	_pawn_selector.clear()
-	for pid: String in ordered_ids:
-		_pawn_selector.add_item(pid)
+	for idx: int in range(ordered_ids.size()):
+		var pid: String = ordered_ids[idx]
+		var pd_item: Dictionary = _pawns_cache[pid]
+		var raw_av: Variant = pd_item.get("is_avatar", false)
+		var flag_av: bool = false
+		if raw_av is bool:
+			var b_av: bool = raw_av
+			flag_av = b_av
+		var is_av: bool = pid.ends_with("_avatar") or flag_av
+		var disp_name: String = str(pd_item.get("name", ""))
+		var label_txt: String = ""
+		if not disp_name.is_empty():
+			label_txt = "%s (%s)" % [disp_name, pid]
+		else:
+			label_txt = "주군 아바타 (%s)" % pid if is_av else "서약 가신 (%s)" % pid
+		_pawn_selector.add_item(label_txt)
+		_pawn_selector.set_item_metadata(idx, pid)
 
 	if not ordered_ids.is_empty():
 		if _selected_pawn_id.is_empty() or not _pawns_cache.has(_selected_pawn_id):
@@ -392,16 +654,26 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 			_pawn_selector.select(sel_idx)
 		_refresh_pawn_controls()
 
+	if _ration_summary_label != null:
+		var stock_v: Variant = snapshot.get("stockpile", {})
+		var stock: Dictionary = stock_v if stock_v is Dictionary else {}
+		var grain_cnt: int = _to_int(stock.get("GRAIN", 0), 0)
+		var wine_cnt: int = _to_int(stock.get("HERBS_WINE", 0), 0)
+		_ration_summary_label.text = "현재 식량 배급: 표준식(보통) · 명주 배급 활성(호주가 사기 상승) · 비축 군량 %s · 약주 %s" % [
+			AssetRegistry.format_num(grain_cnt),
+			AssetRegistry.format_num(wine_cnt)
+		]
+
 	var doc_v: Variant = snapshot.get("standing_doctrine", {})
 	if doc_v is Dictionary:
 		var doc: Dictionary = doc_v
 		for k: Variant in doc.keys():
 			_current_doctrine[str(k)] = doc[k]
-		_select_option_by_text(_stance_opt, str(_current_doctrine.get("engagement_stance", "DEFENSIVE_HOLD")))
-		_select_option_by_text(_formation_opt, str(_current_doctrine.get("formation", "SQUARE_SHIELD")))
-		_select_option_by_text(_duel_opt, str(_current_doctrine.get("duel_policy", "ACCEPT_IF_ADVANTAGE")))
-		_select_option_by_text(_stratagem_opt, str(_current_doctrine.get("stratagem_policy", "FIRE_OR_FLOOD")))
-		_select_option_by_text(_prisoner_opt, str(_current_doctrine.get("prisoner_policy", "RECRUIT_PERSUADE")))
+		_select_option_by_raw(_stance_opt, str(_current_doctrine.get("engagement_stance", "DEFENSIVE_HOLD")))
+		_select_option_by_raw(_formation_opt, str(_current_doctrine.get("formation", "SQUARE_SHIELD")))
+		_select_option_by_raw(_duel_opt, str(_current_doctrine.get("duel_policy", "ACCEPT_IF_ADVANTAGE")))
+		_select_option_by_raw(_stratagem_opt, str(_current_doctrine.get("stratagem_policy", "FIRE_OR_FLOOD")))
+		_select_option_by_raw(_prisoner_opt, str(_current_doctrine.get("prisoner_policy", "RECRUIT_PERSUADE")))
 
 
 func reset_view_state() -> void:
@@ -409,6 +681,8 @@ func reset_view_state() -> void:
 	_selected_pawn_id = ""
 	if _pawn_selector != null:
 		_pawn_selector.clear()
+	if _pawn_status_label != null:
+		_pawn_status_label.text = "직무: 대기 · 기분 50 · 충성 50% · 건강"
 	for dom: String in PawnEntity.WORK_DOMAINS:
 		_update_priority_button_visuals(dom, 2)
 	_current_schedule = [
@@ -422,12 +696,12 @@ func reset_view_state() -> void:
 			_schedule_selectors[si].select(idx)
 	_current_doctrine = ManorState.DEFAULT_DOCTRINE.duplicate(true)
 	if _stance_opt != null:
-		_select_option_by_text(_stance_opt, str(_current_doctrine.get("engagement_stance", "DEFENSIVE_HOLD")))
+		_select_option_by_raw(_stance_opt, str(_current_doctrine.get("engagement_stance", "DEFENSIVE_HOLD")))
 	if _formation_opt != null:
-		_select_option_by_text(_formation_opt, str(_current_doctrine.get("formation", "SQUARE_SHIELD")))
+		_select_option_by_raw(_formation_opt, str(_current_doctrine.get("formation", "SQUARE_SHIELD")))
 	if _duel_opt != null:
-		_select_option_by_text(_duel_opt, str(_current_doctrine.get("duel_policy", "ACCEPT_IF_ADVANTAGE")))
+		_select_option_by_raw(_duel_opt, str(_current_doctrine.get("duel_policy", "ACCEPT_IF_ADVANTAGE")))
 	if _stratagem_opt != null:
-		_select_option_by_text(_stratagem_opt, str(_current_doctrine.get("stratagem_policy", "FIRE_OR_FLOOD")))
+		_select_option_by_raw(_stratagem_opt, str(_current_doctrine.get("stratagem_policy", "FIRE_OR_FLOOD")))
 	if _prisoner_opt != null:
-		_select_option_by_text(_prisoner_opt, str(_current_doctrine.get("prisoner_policy", "RECRUIT_PERSUADE")))
+		_select_option_by_raw(_prisoner_opt, str(_current_doctrine.get("prisoner_policy", "RECRUIT_PERSUADE")))
